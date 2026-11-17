@@ -99,7 +99,8 @@ class TestRealData(unittest.TestCase):
         for rel in ("index.html", "music/index.html", "shows/index.html", "404.html",
                     "sitemap.xml", "robots.txt", "assets/style.css", "assets/share.png"):
             self.assertTrue((out / "_site" / rel).is_file(), rel)
-        self.assertFalse((out / "_site" / "CNAME").exists())
+        self.assertEqual((out / "_site" / "CNAME").read_text(), "songsbyjoel.com\n")
+        self.assertIn('href="/shows/"', (out / "_site" / "404.html").read_text())
 
     def test_check_command(self):
         with redirect_stdout(io.StringIO()) as out, redirect_stderr(io.StringIO()):

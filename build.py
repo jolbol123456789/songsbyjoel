@@ -26,8 +26,8 @@ from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent
 
-# Where the site lives. Phase 3 switches this to "https://songsbyjoel.com/".
-DEFAULT_BASE_URL = "https://jolbol123456789.github.io/songsbyjoel/"
+# Where the site lives. In GitHub Actions it is taken from the Pages settings instead.
+DEFAULT_BASE_URL = "https://songsbyjoel.com/"
 CUSTOM_DOMAIN = "songsbyjoel.com"
 TIMEZONE = "Europe/Stockholm"
 SUPPORTED_SCHEMA_VERSIONS = (1,)
