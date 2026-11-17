@@ -1,0 +1,7 @@
+_site/
+*.md
+.DS_Store
+__pycache__/
+tests/work/
+_arkiv/
+.claude/

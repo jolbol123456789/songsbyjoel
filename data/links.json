@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "streaming": [
+    { "id": "spotify", "label": "Spotify", "url": "https://example.com/PLACEHOLDER-spotify" },
+    { "id": "apple_music", "label": "Apple Music", "url": "https://example.com/PLACEHOLDER-apple-music" },
+    { "id": "youtube", "label": "YouTube", "url": "https://example.com/PLACEHOLDER-youtube" },
+    { "id": "bandcamp", "label": "Bandcamp", "url": "https://example.com/PLACEHOLDER-bandcamp" }
+  ],
+  "social": [
+    { "id": "instagram", "label": "Instagram", "url": "https://example.com/PLACEHOLDER-instagram" },
+    { "id": "tiktok", "label": "TikTok", "url": "https://example.com/PLACEHOLDER-tiktok" }
+  ],
+  "merch_url": "https://shop.songsbyjoel.com"
+}

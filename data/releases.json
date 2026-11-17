@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "releases": [
+    {
+      "id": "placeholder-song",
+      "title": "Placeholder Song",
+      "type": "single",
+      "release_date": "2026-01-01",
+      "cover": "assets/covers/placeholder.svg",
+      "links": {
+        "spotify": "https://example.com/PLACEHOLDER-release-spotify",
+        "bandcamp": "https://example.com/PLACEHOLDER-release-bandcamp"
+      }
+    }
+  ]
+}
