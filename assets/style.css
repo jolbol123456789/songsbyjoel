@@ -1,95 +1,136 @@
-/* Neutral base styles. The real design comes in phase 4. */
+/* songsbyjoel.com – matches the shop (shop.songsbyjoel.com): Outfit + Rethink Sans,
+   mint background, near-black ink, 16px corners. Fonts are self-hosted (SIL OFL, see assets/fonts/). */
+@font-face {
+  font-family: "Outfit"; font-weight: 400; font-style: normal; font-display: swap;
+  src: url("fonts/outfit_n4.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Outfit"; font-weight: 700; font-style: normal; font-display: swap;
+  src: url("fonts/outfit_n7.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Rethink Sans"; font-weight: 700; font-style: normal; font-display: swap;
+  src: url("fonts/rethink_sans_n7.woff2") format("woff2");
+}
+
 :root {
-  --bg: #ffffff;
-  --fg: #161616;
-  --muted: #5c5c5c;
-  --line: #e2e2e2;
-  --accent: #161616;
-  --accent-fg: #ffffff;
-  --radius: 10px;
-  color-scheme: light dark;
+  --bg: #b9f2b7;          /* shop background */
+  --ink: #1c1c1d;         /* shop primary / text */
+  --paper: #f5f5f3;       /* text on ink */
+  --muted: #3f4a3f;       /* softer ink, still AA on mint */
+  --line: rgba(28, 28, 29, .16);
+  --tint: rgba(28, 28, 29, .07);
+  --radius: 16px;
+  --font-base: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: "Rethink Sans", "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #121212;
-    --fg: #f2f2f2;
-    --muted: #a8a8a8;
-    --line: #2e2e2e;
-    --accent: #f2f2f2;
-    --accent-fg: #121212;
-  }
-}
+
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
   background: var(--bg);
-  color: var(--fg);
-  font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  font: 400 17px/1.55 var(--font-base);
+  -webkit-font-smoothing: antialiased;
 }
 img { max-width: 100%; height: auto; display: block; }
-a { color: inherit; }
-h1, h2, h3 { line-height: 1.2; margin: 0 0 .5em; }
-h1 { font-size: 2rem; }
+a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+h1, h2, h3 { font-family: var(--font-heading); font-weight: 700; line-height: 1.15; margin: 0 0 .5em; letter-spacing: -.01em; }
+h1 { font-size: clamp(2.25rem, 8vw, 3.25rem); letter-spacing: -.02em; }
 h2 { font-size: 1.35rem; }
 h3 { font-size: 1.1rem; }
 p { margin: 0 0 .75em; }
+::selection { background: var(--ink); color: var(--bg); }
 
-.wrap { max-width: 44rem; margin: 0 auto; padding: 0 16px; }
+.wrap { width: 100%; max-width: 46rem; margin: 0 auto; padding: 0 16px; }
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap;
 }
 .skip { position: absolute; left: -999px; }
-.skip:focus { left: 16px; top: 8px; background: var(--bg); padding: 8px; z-index: 1; }
-:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
+.skip:focus { left: 16px; top: 8px; background: var(--ink); color: var(--paper); padding: 8px 12px; border-radius: 8px; z-index: 1; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 
-.site-header { border-bottom: 1px solid var(--line); }
+/* Header: centred logo like the shop, menu underneath */
 .site-header .wrap {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-  gap: 8px 16px; padding-top: 14px; padding-bottom: 14px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding-top: 22px; padding-bottom: 10px;
 }
-.logo { font-weight: 800; font-size: 1.4rem; text-decoration: none; letter-spacing: .02em; }
+.logo {
+  font-family: var(--font-heading); font-weight: 700; font-size: 1.75rem; line-height: 1;
+  text-decoration: none; letter-spacing: -.01em; padding: 4px 8px;
+}
 .site-header ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
 .site-header nav a {
-  display: block; padding: 8px 12px; border-radius: var(--radius);
-  text-decoration: none; font-weight: 600;
+  display: block; padding: 8px 14px; border-radius: 999px;
+  text-decoration: none; font-size: .95rem;
 }
-.site-header nav a:hover { background: var(--line); }
-.site-header nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
+.site-header nav a:hover { background: var(--tint); }
+.site-header nav a[aria-current="page"] { background: var(--ink); color: var(--paper); font-weight: 700; }
 
-main { padding-top: 28px; padding-bottom: 40px; }
-section { margin-bottom: 36px; }
+main { flex: 1; padding-top: 36px; padding-bottom: 56px; }
+section { margin-bottom: 44px; }
+section > h2 { font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; font-family: var(--font-base); font-weight: 700; color: var(--muted); }
 
+/* Buttons: filled ink pills like the shop's primary button */
 .buttons, .social { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .button {
-  display: inline-block; padding: 10px 16px; min-height: 44px;
-  border: 1px solid var(--accent); border-radius: var(--radius);
-  text-decoration: none; font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 10px 18px;
+  background: var(--ink); color: var(--paper);
+  border: 2px solid var(--ink); border-radius: var(--radius);
+  text-decoration: none; font-weight: 700; font-size: .95rem; line-height: 1.2;
+  transition: background-color .15s, color .15s;
 }
-.button:hover { background: var(--accent); color: var(--accent-fg); }
+.button:hover { background: transparent; color: var(--ink); }
+.social .button { background: transparent; color: var(--ink); }
+.social .button:hover { background: var(--ink); color: var(--paper); }
 
-.releases { display: grid; gap: 28px; }
-.release { display: grid; gap: 14px; }
-.release .cover { width: 100%; max-width: 420px; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius); background: var(--line); }
-.release-title { font-size: 1.3rem; margin-bottom: .2em; }
+/* Releases */
+.releases { display: grid; gap: 32px; }
+.release { display: grid; gap: 16px; }
+.release .cover {
+  width: 100%; aspect-ratio: 1; object-fit: cover;
+  border-radius: var(--radius); background: var(--ink);
+  box-shadow: 0 18px 40px -22px rgba(28, 28, 29, .55);
+}
+.release-title { font-size: 1.6rem; margin-bottom: .15em; }
+.meta { color: var(--muted); margin-bottom: 14px; }
 .meta, .place, .note, .when { color: var(--muted); }
+/* Home: the latest release is the hero */
+section[aria-labelledby="latest-heading"] .release .cover { max-width: 460px; }
+section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9rem, 7vw, 2.6rem); }
 @media (min-width: 640px) {
-  .releases .release { grid-template-columns: 200px 1fr; align-items: start; }
+  .releases .release { grid-template-columns: 200px 1fr; align-items: center; gap: 24px; }
+  section[aria-labelledby="latest-heading"] .release { grid-template-columns: 300px 1fr; align-items: center; gap: 28px; }
 }
 
-.shows { list-style: none; margin: 0; padding: 0; }
-.show { padding: 16px 0; border-top: 1px solid var(--line); }
-.show:last-child { border-bottom: 1px solid var(--line); }
-.show .when { font-weight: 600; color: var(--fg); margin-bottom: .2em; }
-.show .venue { margin-bottom: .1em; }
-.show .tickets { margin: .5em 0 0; }
+/* Shows */
+.shows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.show { padding: 18px 20px; background: var(--tint); border-radius: var(--radius); }
+.show .when { font-weight: 700; color: var(--ink); margin-bottom: .15em; }
+.show .venue { font-size: 1.2rem; margin-bottom: .1em; }
+.show .place { margin-bottom: 0; }
+.show .tickets { margin: 12px 0 0; }
 .show .note { margin: .5em 0 0; }
+.empty { color: var(--muted); }
 
-.past summary { cursor: pointer; }
-.past summary h2 { display: inline; }
-.past .shows { margin-top: 12px; opacity: .85; }
+.past summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; }
+.past summary::-webkit-details-marker { display: none; }
+.past summary::before { content: "+"; font-weight: 700; width: 1em; }
+.past[open] summary::before { content: "–"; }
+.past summary h2 { display: inline; margin: 0; }
+.past .shows { margin-top: 14px; opacity: .8; }
 
-.site-footer { border-top: 1px solid var(--line); padding: 24px 0 40px; color: var(--muted); }
-.site-footer .social { margin-bottom: 16px; }
-.site-footer .social a { color: var(--muted); }
+/* Footer: dark band like the shop */
+.site-footer { background: var(--ink); color: var(--paper); padding: 32px 0 40px; }
+.site-footer .social { margin-bottom: 20px; }
+.site-footer .social .button { color: var(--paper); border-color: rgba(245, 245, 243, .35); }
+.site-footer .social .button:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.site-footer p { margin: 0; font-family: var(--font-heading); font-weight: 700; font-size: 1.25rem; }
+.site-footer :focus-visible { outline-color: var(--paper); }
