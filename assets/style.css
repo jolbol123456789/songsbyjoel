@@ -163,6 +163,7 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 .show .place { margin-bottom: 0; }
 .show .tickets { margin: 12px 0 0; }
 .show .note { margin: .5em 0 0; }
+.show .tour { margin: 0 0 .35em; font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .empty { color: var(--muted); }
 
 .past summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; }

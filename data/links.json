@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "streaming": [
-    { "id": "spotify", "label": "Spotify", "url": "https://example.com/PLACEHOLDER-spotify" },
-    { "id": "apple_music", "label": "Apple Music", "url": "https://example.com/PLACEHOLDER-apple-music" },
-    { "id": "youtube", "label": "YouTube", "url": "https://example.com/PLACEHOLDER-youtube" },
-    { "id": "bandcamp", "label": "Bandcamp", "url": "https://example.com/PLACEHOLDER-bandcamp" }
+    { "id": "spotify", "label": "Spotify", "url": "https://open.spotify.com/artist/1QWsOs2KQHHnh1ttP9PXgj" },
+    { "id": "apple_music", "label": "Apple Music", "url": "https://music.apple.com/se/artist/joel/1870054182" },
+    { "id": "youtube", "label": "YouTube", "url": "https://www.youtube.com/@Joels-sounds" },
+    { "id": "bandcamp", "label": "Bandcamp", "url": "https://joeljoel.bandcamp.com" }
   ],
   "social": [
-    { "id": "instagram", "label": "Instagram", "url": "https://example.com/PLACEHOLDER-instagram" },
-    { "id": "tiktok", "label": "TikTok", "url": "https://example.com/PLACEHOLDER-tiktok" }
+    { "id": "instagram", "label": "Instagram", "url": "https://www.instagram.com/joel__back/" },
+    { "id": "tiktok", "label": "TikTok", "url": "https://www.tiktok.com/@joels.tiktoks" }
   ],
   "merch_url": "https://shop.songsbyjoel.com"
 }

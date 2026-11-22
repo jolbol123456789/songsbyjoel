@@ -31,6 +31,8 @@ DEFAULT_BASE_URL = "https://songsbyjoel.com/"
 CUSTOM_DOMAIN = "songsbyjoel.com"
 TIMEZONE = "Europe/Stockholm"
 SUPPORTED_SCHEMA_VERSIONS = (1,)
+# shows.json version 2 adds the optional fields "end_time" and "tour". Version 1 still works.
+SHOWS_SCHEMA_VERSIONS = (1, 2)
 
 SITE_NAME = "Joel"
 SHARE_IMAGE = "assets/share.png"
@@ -175,7 +177,7 @@ def where_item(list_name, index, item):
     return label
 
 
-def read_json(path, checker):
+def read_json(path, checker, supported=SUPPORTED_SCHEMA_VERSIONS):
     if not path.is_file():
         checker.fail("", "file is missing")
         return None
@@ -193,9 +195,9 @@ def read_json(path, checker):
     if "schema_version" not in data:
         checker.fail("", 'missing field "schema_version"')
         return None
-    if type(version) is not int or version not in SUPPORTED_SCHEMA_VERSIONS:
-        supported = ", ".join(str(v) for v in SUPPORTED_SCHEMA_VERSIONS)
-        checker.fail("", f'unknown "schema_version" {json.dumps(version)} (this build.py supports: {supported})')
+    if type(version) is not int or version not in supported:
+        listed = ", ".join(str(v) for v in supported)
+        checker.fail("", f'unknown "schema_version" {json.dumps(version)} (this build.py supports: {listed})')
         return None
     return data
 
@@ -307,7 +309,7 @@ def check_cover(c, where, cover, assets_root):
 
 def validate_shows(data_dir):
     c = Checker("shows.json")
-    data = read_json(data_dir / "shows.json", c)
+    data = read_json(data_dir / "shows.json", c, SHOWS_SCHEMA_VERSIONS)
     shows = []
     if data is not None:
         c.keys(data, "top level", ["schema_version", "shows"])
@@ -315,7 +317,8 @@ def validate_shows(data_dir):
             where = where_item("shows", index, raw)
             if c.obj(raw, where) is None:
                 continue
-            c.keys(raw, where, ["id", "date", "venue", "city", "country", "tickets"], ["time", "note"])
+            optional = ["time", "note"] + (["end_time", "tour"] if data["schema_version"] >= 2 else [])
+            c.keys(raw, where, ["id", "date", "venue", "city", "country", "tickets"], optional)
             item = {
                 "id": c.ident(raw.get("id"), where) if "id" in raw else None,
                 "date": c.date(raw.get("date"), where, "date") if "date" in raw else None,
@@ -325,6 +328,8 @@ def validate_shows(data_dir):
                 "country": None,
                 "tickets": None,
                 "note": "",
+                "end_time": None,
+                "tour": "",
             }
             if "time" in raw:
                 time = c.text(raw["time"], where, "time")
@@ -332,6 +337,17 @@ def validate_shows(data_dir):
                     c.fail(where, f'field "time": "{time}" is not a valid time (expected HH:MM, 24h)')
                 else:
                     item["time"] = time
+            if "end_time" in raw:
+                end = c.text(raw["end_time"], where, "end_time")
+                if end is not None and not TIME_RE.match(end):
+                    c.fail(where, f'field "end_time": "{end}" is not a valid time (expected HH:MM, 24h)')
+                elif end is not None and "time" not in raw:
+                    c.fail(where, 'field "end_time": needs a start "time" too')
+                else:
+                    item["end_time"] = end
+            if "tour" in raw:
+                tour = c.text(raw["tour"], where, "tour", allow_empty=True)
+                item["tour"] = (tour or "").strip()
             if "country" in raw:
                 country = c.text(raw["country"], where, "country")
                 if country is not None and not COUNTRY_RE.match(country):
@@ -538,6 +554,8 @@ class Site:
         if show["time"]:
             datetime_attr += f'T{show["time"]}'
             when += f' · {show["time"]}'
+            if show["end_time"]:
+                when += f'–{show["end_time"]}'
         if show["tickets"]["type"] == "free":
             tickets = '<p class="tickets">Free – no tickets needed</p>'
         else:
@@ -554,6 +572,7 @@ class Site:
             place=esc(f'{show["city"]}, {country}'),
             tickets=tickets,
             note=note,
+            tour=f'<p class="tour">{esc(show["tour"])}</p>' if show["tour"] else "",
         )
 
     def show_list(self, shows):

@@ -152,6 +152,24 @@ class TestShows(FixtureTest):
         self.assertNotIn("show-later", html)
         self.assertIn('href="./shows/"', html)
 
+    def test_shows_schema_v2_end_time_and_tour(self):
+        fx = self.make()
+        fx.write("shows.json", {"schema_version": 2, "shows": [
+            show("tour", "2026-12-24", time="19:00", end_time="21:30", tour="Some <Tour>")]})
+        html = fx.page("shows/index.html")
+        self.assertIn("19:00–21:30", html)
+        self.assertIn('<p class="tour">Some &lt;Tour&gt;</p>', html)
+
+    def test_shows_schema_v2_fields_checked(self):
+        fx = self.make()
+        fx.write("shows.json", {"schema_version": 2, "shows": [show("s", "2026-12-24", end_time="21:00")]})
+        self.assertInvalid(fx, 'field "end_time"', 'start "time"')
+        fx = self.make()
+        fx.write("shows.json", {"schema_version": 2, "shows": [show("s", "2026-12-24", time="19:00", end_time="late")]})
+        self.assertInvalid(fx, 'field "end_time"', "HH:MM")
+        # Version 1 does not know the new fields.
+        self.assertInvalid(self.make(shows=[show("s", "2026-12-24", tour="x")]), 'unknown field "tour"')
+
     def test_home_without_shows_has_no_next_show(self):
         self.assertNotIn("Next show", self.make().page("index.html"))
 
@@ -274,8 +292,11 @@ class TestValidation(FixtureTest):
 
     def test_unknown_schema_version(self):
         fx = self.make()
-        fx.write("shows.json", {"schema_version": 2, "shows": []})
-        self.assertInvalid(fx, "data/shows.json", "schema_version", "2")
+        fx.write("shows.json", {"schema_version": 3, "shows": []})
+        self.assertInvalid(fx, "data/shows.json", "schema_version", "3")
+        fx = self.make()
+        fx.write("releases.json", {"schema_version": 2, "releases": []})
+        self.assertInvalid(fx, "data/releases.json", "schema_version", "2")
 
     def test_missing_schema_version(self):
         fx = self.make()
