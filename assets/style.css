@@ -67,7 +67,8 @@ p { margin: 0 0 .75em; }
   display: grid; grid-template-columns: 1fr 6fr 1fr; align-items: center;
 }
 .logo { grid-column: 2; display: block; line-height: 0; text-decoration: none; }
-.logo img { display: block; width: 100px; height: 100%; max-height: 48px; margin: 0 auto; object-fit: contain; }
+/* Same size as the shop's logo: 149px wide, max 48px tall on mobile, 149 x 60 on desktop. */
+.logo img { display: block; width: 149px; height: 48px; margin: 0 auto; object-fit: contain; }
 .header-icon { display: block; width: 18px; height: 18px; padding: 0; color: var(--ink); cursor: pointer; }
 .header-icon svg { display: block; width: 18px; height: 18px; }
 .header-icon:hover { color: rgba(28, 28, 29, .6); }
@@ -108,7 +109,7 @@ body:has(.menu-toggle:checked) { overflow: hidden; }
     grid-template-columns: 1fr auto 1fr; column-gap: 1rem;
   }
   .logo { grid-column: 1; justify-self: start; }
-  .logo img { height: auto; max-height: none; margin: 0; }
+  .logo img { height: auto; margin: 0; }
   .menu-open, .menu-close, .menu-backdrop, .menu-toggle { display: none; }
   .menu {
     grid-column: 2; justify-self: center; position: static; width: auto; height: auto; overflow: visible;
