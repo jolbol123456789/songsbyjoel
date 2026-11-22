@@ -54,18 +54,6 @@ MONTHS = ["January", "February", "March", "April", "May", "June", "July",
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 NAV = [("music", "Music"), ("merch", "Merch"), ("shows", "Shows")]
-# Same bag icon as the shop header (16x16 path).
-BAG_ICON = (
-    "M7.99999 1.5C7.40211 1.5 6.83677 1.72464 6.4264 2.11207C6.0175 2.49812 5.79646 3.0122 5.79646 3.53846V4.46154"
-    "H10.2035V3.53846C10.2035 3.0122 9.98249 2.49812 9.57359 2.11207C9.16322 1.72464 8.59788 1.5 7.99999 1.5Z"
-    "M11.7035 4.46154V3.53846C11.7035 2.58564 11.3022 1.68119 10.6033 1.02137C9.90591 0.362928 8.96875 0 7.99999 0"
-    "C7.03123 0 6.09408 0.362928 5.39666 1.02137C4.69777 1.68119 4.29646 2.58564 4.29646 3.53846V4.46154H2.96808"
-    "C2.09126 4.46154 1.34979 5.11042 1.23353 5.97949L0.15814 14.018C0.0177587 15.0673 0.833995 16 1.89269 16"
-    "H14.1073C15.166 16 15.9822 15.0673 15.8419 14.018L14.7665 5.97949C14.6502 5.11042 13.9087 4.46154 13.0319 4.46154"
-    "H11.7035ZM2.96808 5.96154C2.84282 5.96154 2.73689 6.05424 2.72028 6.17839L1.64489 14.2169C1.62484 14.3668"
-    " 1.74145 14.5 1.89269 14.5H14.1073C14.2586 14.5 14.3752 14.3668 14.3551 14.2169L13.2797 6.17839C13.2631 6.05424"
-    " 13.1572 5.96154 13.0319 5.96154H2.96808Z"
-)
 
 # Joel's Spotify playlist with all his songs, shown on the home and music pages.
 PLAYLIST_TITLE = "The Joel Collection"
@@ -519,16 +507,6 @@ class Site:
             return FEATURED_MERCH[0]["url"]
         return self.merch_url
 
-    def shop_icon(self):
-        """Bag icon in the header's right corner, like the shop's cart icon. Links to the shop."""
-        if not self.merch_url:
-            return ""
-        return (
-            f'<a class="header-icon shop" href="{esc(self.merch_url)}" aria-label="Merch shop">'
-            f'<svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" focusable="false">'
-            f'<path fill="currentColor" fill-rule="evenodd" d="{BAG_ICON}"/></svg></a>'
-        )
-
     def link_list(self, links, css_class):
         if not links:
             return ""
@@ -650,7 +628,6 @@ class Site:
             root=esc(root),
             home_current=' aria-current="page"' if current == "home" else "",
             nav=self.nav(root, current),
-            shop_icon=self.shop_icon(),
             content=content,
             footer_listen=self.footer_links(self.streaming),
             footer_follow=self.footer_links(self.social),

@@ -177,6 +177,8 @@ class TestShows(FixtureTest):
         html = self.make().page("index.html")
         merch = html.split('id="merch-heading"')[1].split("</section>")[0]
         self.assertIn('href="https://shop.songsbyjoel.com/en-sek/products/walking-billboard-tee"', merch)
+        self.assertEqual(merch.count('href="https://shop.songsbyjoel.com/en-sek/products/walking-billboard-tee"'), 2)
+        self.assertIn('<a class="merch-image"', merch)  # the image links to the product too
         self.assertIn("Walking Billboard Tee", merch)
         self.assertNotIn("kr", merch)
 
