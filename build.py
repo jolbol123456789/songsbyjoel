@@ -76,7 +76,7 @@ PRIMARY_SERVICES = ("spotify", "apple_music")
 # The image is a local copy (no requests to the shop's image servers).
 FEATURED_MERCH = [
     {"title": "Walking Billboard Tee",
-     "url": "https://shop.songsbyjoel.com/products/walking-billboard-tee",
+     "url": "https://shop.songsbyjoel.com/en-sek/products/walking-billboard-tee",
      "image": "assets/merch/walking-billboard-tee.jpg"},
 ]
 
@@ -508,10 +508,16 @@ class Site:
     def nav(self, root, current):
         items = []
         for key, label in NAV:
-            href = self.merch_url if key == "merch" else f"{root}{key}/"
+            href = self.merch_tab_url() if key == "merch" else f"{root}{key}/"
             aria = ' aria-current="page"' if key == current else ""
             items.append(f'<li><a href="{esc(href)}"{aria}>{label}</a></li>')
         return "\n          ".join(items)
+
+    def merch_tab_url(self):
+        """The Merch tab. With a single product it goes straight to that product's page."""
+        if self.merch_url and len(FEATURED_MERCH) == 1:
+            return FEATURED_MERCH[0]["url"]
+        return self.merch_url
 
     def shop_icon(self):
         """Bag icon in the header's right corner, like the shop's cart icon. Links to the shop."""

@@ -176,7 +176,7 @@ class TestShows(FixtureTest):
     def test_home_merch(self):
         html = self.make().page("index.html")
         merch = html.split('id="merch-heading"')[1].split("</section>")[0]
-        self.assertIn('href="https://shop.songsbyjoel.com/products/walking-billboard-tee"', merch)
+        self.assertIn('href="https://shop.songsbyjoel.com/en-sek/products/walking-billboard-tee"', merch)
         self.assertIn("Walking Billboard Tee", merch)
         self.assertNotIn("kr", merch)
 
@@ -431,7 +431,7 @@ class TestPagesAndMenu(FixtureTest):
             hrefs = re.findall(r'<a href="([^"]+)"', nav)
             labels = re.findall(r">(\w+)</a>", nav)
             self.assertEqual(labels, ["Music", "Merch", "Shows"], rel)
-            self.assertEqual(hrefs, [f"{root}music/", "https://shop.songsbyjoel.com", f"{root}shows/"], rel)
+            self.assertEqual(hrefs, [f"{root}music/", "https://shop.songsbyjoel.com/en-sek/products/walking-billboard-tee", f"{root}shows/"], rel)
             self.assertIn(f'<a class="logo" href="{root}"', html, rel)
             self.assertNotIn("target=", nav, rel)  # Merch opens in the same tab
             marked = re.findall(r'href="([^"]+)" aria-current="page"', html)
