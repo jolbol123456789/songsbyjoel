@@ -148,12 +148,27 @@ section > h2 { font-size: .85rem; text-transform: uppercase; letter-spacing: .08
 .meta { color: var(--muted); margin-bottom: 14px; }
 .meta, .place, .note, .when { color: var(--muted); }
 /* Home: the latest release is the hero */
-section[aria-labelledby="latest-heading"] .release .cover { max-width: 460px; }
+/* The cover shrinks on short phone screens so the Spotify and Apple Music buttons are visible without scrolling. */
+section[aria-labelledby="latest-heading"] .release .cover { max-width: min(460px, 40vh); max-width: min(460px, 40svh); }
+.buttons .is-primary { flex: 1 1 calc(50% - 4px); }
+.buttons .is-primary .button { width: 100%; background: var(--ink); color: var(--paper); min-height: 50px; font-size: 1rem; }
+.buttons .is-primary .button:hover { background: rgba(28, 28, 29, .82); border-color: rgba(28, 28, 29, .82); }
+.release-info .buttons + .player { margin-top: 16px; }
 section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9rem, 7vw, 2.6rem); }
 @media (min-width: 640px) {
   .releases .release { grid-template-columns: 200px 1fr; align-items: center; gap: 24px; }
   section[aria-labelledby="latest-heading"] .release { grid-template-columns: 300px 1fr; align-items: center; gap: 28px; }
 }
+
+/* Merch: small card, picture left and title + button right */
+.merch { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.merch-item {
+  display: grid; grid-template-columns: 108px 1fr; gap: 18px; align-items: center;
+  padding: 12px; background: var(--tint); border-radius: var(--radius);
+}
+.merch-item img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: calc(var(--radius) - 6px); background: var(--bg); }
+.merch-title { font-size: 1.2rem; margin: 0 0 12px; }
+@media (min-width: 640px) { .merch-item { grid-template-columns: 150px 1fr; padding: 14px; gap: 24px; } }
 
 /* Shows */
 .shows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }

@@ -146,6 +146,27 @@ class TestShows(FixtureTest):
         self.assertIn("No upcoming shows right now", html)
         self.assertIn("Past shows", html)
 
+    def test_home_latest_release_buttons_first(self):
+        links = {"bandcamp": "https://x.bandcamp.com/track/a", "apple_music": "https://music.apple.com/se/album/a/1",
+                 "spotify": "https://open.spotify.com/album/79h1TX1O8Bu82rtGW6mkVz"}
+        services = links_data()
+        services["streaming"].append({"id": "apple_music", "label": "Apple Music", "url": "https://music.apple.com/se/artist/x/1"})
+        html = self.make(links=services, releases=[release("a", "2026-12-01", links=links)]).page("index.html")
+        latest = html.split('id="latest-heading"')[1].split("</section>")[0]
+        # Spotify and Apple Music come first as primary buttons, before the player and other services.
+        self.assertLess(latest.index('class="is-primary"><a class="button" href="https://open.spotify.com/album/79h1TX1O8Bu82rtGW6mkVz"'),
+                        latest.index("Bandcamp"))
+        self.assertIn('class="is-primary"><a class="button" href="https://music.apple.com/se/album/a/1"', latest)
+        self.assertLess(latest.index("Bandcamp"), latest.index('class="player"'))
+        self.assertIn('fetchpriority="high"', latest)
+
+    def test_home_merch(self):
+        html = self.make().page("index.html")
+        merch = html.split('id="merch-heading"')[1].split("</section>")[0]
+        self.assertIn('href="https://shop.songsbyjoel.com/products/walking-billboard-tee"', merch)
+        self.assertIn("Walking Billboard Tee", merch)
+        self.assertNotIn("kr", merch)
+
     def test_next_show_on_home(self):
         fx = self.make(shows=[show("later", "2027-01-01"), show("next", "2026-12-05")])
         html = fx.page("index.html")

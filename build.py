@@ -69,6 +69,15 @@ BAG_ICON = (
 # Joel's Spotify playlist with all his songs, shown on the home and music pages.
 PLAYLIST_TITLE = "The Joel Collection"
 PLAYLIST_URL = "https://open.spotify.com/playlist/1STR4IBNDJNFmZtll9Xwew"
+# Services shown as big filled buttons for the latest release on the home page (mobile visitors want these first).
+PRIMARY_SERVICES = ("spotify", "apple_music")
+# Merch featured on the home page. Title and a link to the product in the shop, no prices.
+# The image is a local copy (no requests to the shop's image servers).
+FEATURED_MERCH = [
+    {"title": "Walking Billboard Tee",
+     "url": "https://shop.songsbyjoel.com/products/walking-billboard-tee",
+     "image": "assets/merch/walking-billboard-tee.jpg"},
+]
 
 ID_RE = re.compile(r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -510,10 +519,19 @@ class Site:
         )
         return f'<ul class="{css_class}">{items}\n      </ul>'
 
-    def release_buttons(self, release):
-        links = [{"label": s["label"], "url": release["links"][s["id"]]}
-                 for s in self.streaming if s["id"] in release["links"]]
-        return self.link_list(links, "buttons")
+    def release_buttons(self, release, primary=False):
+        services = [s for s in self.streaming if s["id"] in release["links"]]
+        if not primary:
+            links = [{"label": s["label"], "url": release["links"][s["id"]]} for s in services]
+            return self.link_list(links, "buttons")
+        # Home page: Spotify and Apple Music first, as big filled buttons; the rest stay outlined.
+        services.sort(key=lambda s: s["id"] not in PRIMARY_SERVICES)
+        primary_class = ' class="is-primary"'
+        items = "".join(
+            f'\n        <li{primary_class if s["id"] in PRIMARY_SERVICES else ""}>'
+            f'<a class="button" href="{esc(release["links"][s["id"]])}">{esc(s["label"])}</a></li>'
+            for s in services)
+        return f'<ul class="buttons">{items}\n      </ul>' if items else ""
 
     def spotify_player(self, url, label="Play on Spotify"):
         """Click-to-load Spotify player. Nothing is fetched from Spotify until the visitor
@@ -530,12 +548,20 @@ class Site:
                 f'            </a>\n'
                 f'          </div>')
 
+    def merch(self, root):
+        if not self.merch_url or not FEATURED_MERCH:
+            return ""
+        items = "".join(self.t.render("partials/merch_item.html",
+                                      title=esc(m["title"]), url=esc(m["url"]), image=esc(root + m["image"]))
+                        for m in FEATURED_MERCH)
+        return self.t.render("partials/merch.html", items=items)
+
     def playlist(self):
         return self.t.render("partials/playlist.html",
                              title=esc(PLAYLIST_TITLE),
                              player=self.spotify_player(PLAYLIST_URL, f"Play {PLAYLIST_TITLE}"))
 
-    def release_card(self, release, root, heading, player=False):
+    def release_card(self, release, root, heading, player=False, hero=False):
         return self.t.render(
             "partials/release.html",
             heading=heading,
@@ -546,7 +572,8 @@ class Site:
             type=RELEASE_TYPES[release["type"]],
             date_iso=release["release_date"].isoformat(),
             date=long_date(release["release_date"]),
-            buttons=self.release_buttons(release),
+            buttons=self.release_buttons(release, primary=hero),
+            loading='fetchpriority="high"' if hero else 'loading="lazy"',
             player=self.spotify_player(release["links"].get("spotify")) if player else "",
         )
 
@@ -610,7 +637,7 @@ class Site:
         root = "./"
         latest = latest_release(self.data["releases"], self.today)
         if latest:
-            release = self.release_card(latest, root, "h3", player=True)
+            release = self.release_card(latest, root, "h3", player=True, hero=True)
         else:
             release = '<p>New music is on its way.</p>'
         upcoming, _ = split_shows(self.data["shows"], self.today)
@@ -620,6 +647,7 @@ class Site:
         else:
             next_show = ""
         content = self.t.render("home.html", release=release, next_show=next_show,
+                                merch=self.merch(root),
                                 playlist=self.playlist(),
                                 listen=self.link_list(self.streaming, "buttons"))
         return self.page(path="", title="", current="home", root=root, content=content,

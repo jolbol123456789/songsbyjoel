@@ -1,9 +1,9 @@
       <article class="release" id="release-$id">
-        <img class="cover" src="$cover" alt="$cover_alt" width="600" height="600" loading="lazy">
+        <img class="cover" src="$cover" alt="$cover_alt" width="600" height="600" $loading>
         <div class="release-info">
           <$heading class="release-title">$title</$heading>
           <p class="meta">$type · <time datetime="$date_iso">$date</time></p>
-          $player
           $buttons
+          $player
         </div>
       </article>
