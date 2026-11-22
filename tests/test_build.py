@@ -131,7 +131,7 @@ class TestShows(FixtureTest):
         self.assertNotIn("show-past", upcoming)
         self.assertIn("show-past", past)
         self.assertIn("<details", html)
-        self.assertIn("Free – no tickets needed", html)
+        self.assertIn("Free, no tickets needed", html)
         self.assertRegex(html, r'href="https://tickets\.example\.org/a"[^>]*>Tickets</a>')
         self.assertIn('datetime="2026-12-24T19:30"', html)
 
@@ -157,7 +157,7 @@ class TestShows(FixtureTest):
         fx.write("shows.json", {"schema_version": 2, "shows": [
             show("tour", "2026-12-24", time="19:00", end_time="21:30", tour="Some <Tour>")]})
         html = fx.page("shows/index.html")
-        self.assertIn('<span class="hours"><span class="dash"> – </span>19:00–21:30</span>', html)
+        self.assertIn('<span class="hours">19:00-21:30</span>', html)
         self.assertIn('<p class="tour">Some &lt;Tour&gt;</p>', html)
 
     def test_show_card_text(self):

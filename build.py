@@ -559,9 +559,9 @@ class Site:
         hours = ""
         if show["time"]:
             datetime_attr += f'T{show["time"]}'
-            hours = show["time"] + (f'–{show["end_time"]}' if show["end_time"] else "")
+            hours = show["time"] + (f'-{show["end_time"]}' if show["end_time"] else "")
         if show["tickets"]["type"] == "free":
-            tickets = '<p class="tickets">Free – no tickets needed</p>'
+            tickets = '<p class="tickets">Free, no tickets needed</p>'
         else:
             label = esc(f'Tickets for {show["venue"]}, {show["date"].isoformat()}')
             tickets = (f'<p class="tickets"><a class="button" href="{esc(show["tickets"]["url"])}" '
@@ -574,7 +574,7 @@ class Site:
             when=esc(show_date(show["date"], self.today.year)),
             venue=esc(show["venue"]),
             place=esc(place),
-            hours=f'<span class="hours"><span class="dash"> – </span>{esc(hours)}</span>' if hours else "",
+            hours=f'<span class="hours">{esc(hours)}</span>' if hours else "",
             tickets=tickets,
             note=note,
             tour=f'<p class="tour">{esc(show["tour"])}</p>' if show["tour"] else "",
@@ -585,7 +585,7 @@ class Site:
 
     def page(self, *, path, title, description, current, content, root):
         """Wrap content in the base layout. path is relative to the site root ("" = home)."""
-        full_title = SITE_NAME if not title else f"{title} – {SITE_NAME}"
+        full_title = SITE_NAME if not title else f"{title} | {SITE_NAME}"
         return self.t.render(
             "base.html",
             title=esc(full_title),
@@ -621,7 +621,7 @@ class Site:
                                 playlist=self.playlist(),
                                 listen=self.link_list(self.streaming, "buttons"))
         return self.page(path="", title="", current="home", root=root, content=content,
-                         description="Official site of Joel – new music, merch and upcoming shows.")
+                         description="Official site of Joel: new music, merch and upcoming shows.")
 
     def music(self):
         root = "../"
@@ -645,7 +645,7 @@ class Site:
         if upcoming:
             upcoming_html = self.show_list(upcoming)
         else:
-            upcoming_html = '<p class="empty">No upcoming shows right now – check back soon.</p>'
+            upcoming_html = '<p class="empty">No upcoming shows right now. Check back soon.</p>'
         past_html = self.t.render("partials/past_shows.html", shows=self.show_list(past)) if past else ""
         content = self.t.render("shows.html", upcoming=upcoming_html, past=past_html)
         return self.page(path="shows/", title="Shows", current="shows", root=root, content=content,

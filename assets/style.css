@@ -162,12 +162,11 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 .show-row { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
 .show .venue { font-size: 1.15rem; margin: 0; min-width: 0; }
 .show .venue .place { font-weight: inherit; color: inherit; }
-.show .venue .hours { font-weight: 400; color: var(--muted); white-space: nowrap; }
+.show .venue .hours { margin-left: .6em; font-weight: 400; color: var(--muted); white-space: nowrap; }
 .show .when { margin: 0; font-weight: 700; color: var(--ink); white-space: nowrap; flex-shrink: 0; }
 @media (max-width: 559px) {
   .show .venue { font-size: 1.05rem; }
-  .show .venue .hours { display: block; font-size: .95rem; margin-top: 2px; }
-  .show .venue .dash { display: none; }
+  .show .venue .hours { display: block; margin-left: 0; font-size: .95rem; margin-top: 2px; }
 }
 .show .tickets { margin: 6px 0 0; font-size: .9rem; color: var(--muted); }
 .show .note { margin: 2px 0 0; font-size: .9rem; }
@@ -176,7 +175,7 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 .past summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; }
 .past summary::-webkit-details-marker { display: none; }
 .past summary::before { content: "+"; font-weight: 700; width: 1em; }
-.past[open] summary::before { content: "–"; }
+.past[open] summary::before { content: "−"; }
 .past summary h2 { display: inline; margin: 0; }
 .past .shows { margin-top: 14px; opacity: .8; }
 
