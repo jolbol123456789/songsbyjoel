@@ -41,6 +41,7 @@ PLACEHOLDER_MARK = "example.com"
 
 RELEASE_TYPES = {"single": "Single", "ep": "EP", "album": "Album"}
 COVER_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp", ".svg")
+HOME_COUNTRY = "SE"
 COUNTRY_NAMES = {
     "SE": "Sweden", "DK": "Denmark", "NO": "Norway", "FI": "Finland",
     "IS": "Iceland", "DE": "Germany", "NL": "Netherlands", "GB": "United Kingdom",
@@ -463,8 +464,10 @@ def long_date(day):
     return f"{day.day} {MONTHS[day.month - 1]} {day.year}"
 
 
-def show_date(day):
-    return f"{WEEKDAYS[day.weekday()]} {day.day} {MONTHS[day.month - 1][:3]} {day.year}"
+def show_date(day, this_year=None):
+    """"Fri 4 Dec", with the year only when it is not this year."""
+    text = f"{WEEKDAYS[day.weekday()]} {day.day} {MONTHS[day.month - 1][:3]}"
+    return text if day.year == this_year else f"{text} {day.year}"
 
 
 class Site:
@@ -548,14 +551,15 @@ class Site:
         )
 
     def show_item(self, show):
-        country = COUNTRY_NAMES.get(show["country"], show["country"])
+        # Shows at home in Sweden only need the city; elsewhere the country is added.
+        place = show["city"]
+        if show["country"] != HOME_COUNTRY:
+            place += f', {COUNTRY_NAMES.get(show["country"], show["country"])}'
         datetime_attr = show["date"].isoformat()
-        when = show_date(show["date"])
+        hours = ""
         if show["time"]:
             datetime_attr += f'T{show["time"]}'
-            when += f' · {show["time"]}'
-            if show["end_time"]:
-                when += f'–{show["end_time"]}'
+            hours = show["time"] + (f'–{show["end_time"]}' if show["end_time"] else "")
         if show["tickets"]["type"] == "free":
             tickets = '<p class="tickets">Free – no tickets needed</p>'
         else:
@@ -567,9 +571,10 @@ class Site:
             "partials/show.html",
             id=esc(show["id"]),
             datetime=esc(datetime_attr),
-            when=esc(when),
+            when=esc(show_date(show["date"], self.today.year)),
             venue=esc(show["venue"]),
-            place=esc(f'{show["city"]}, {country}'),
+            place=esc(place),
+            hours=f'<span class="hours"><span class="dash"> – </span>{esc(hours)}</span>' if hours else "",
             tickets=tickets,
             note=note,
             tour=f'<p class="tour">{esc(show["tour"])}</p>' if show["tour"] else "",

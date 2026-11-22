@@ -157,8 +157,17 @@ class TestShows(FixtureTest):
         fx.write("shows.json", {"schema_version": 2, "shows": [
             show("tour", "2026-12-24", time="19:00", end_time="21:30", tour="Some <Tour>")]})
         html = fx.page("shows/index.html")
-        self.assertIn("19:00–21:30", html)
+        self.assertIn('<span class="hours"><span class="dash"> – </span>19:00–21:30</span>', html)
         self.assertIn('<p class="tour">Some &lt;Tour&gt;</p>', html)
+
+    def test_show_card_text(self):
+        fx = self.make(shows=[show("home", "2026-12-24", venue="Hall", city="Lund"),
+                              show("away", "2027-01-15", venue="Club", city="Copenhagen", country="DK")])
+        html = fx.page("shows/index.html")
+        self.assertIn('Hall, <span class="place">Lund</span></h3>', html)
+        self.assertIn(">Thu 24 Dec</time>", html)
+        self.assertIn('Club, <span class="place">Copenhagen, Denmark</span>', html)
+        self.assertIn(">Fri 15 Jan 2027</time>", html)
 
     def test_shows_schema_v2_fields_checked(self):
         fx = self.make()

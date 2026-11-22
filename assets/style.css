@@ -157,13 +157,20 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 
 /* Shows */
 .shows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.show { padding: 18px 20px; background: var(--tint); border-radius: var(--radius); }
-.show .when { font-weight: 700; color: var(--ink); margin-bottom: .15em; }
-.show .venue { font-size: 1.2rem; margin-bottom: .1em; }
-.show .place { margin-bottom: 0; }
-.show .tickets { margin: 12px 0 0; }
-.show .note { margin: .5em 0 0; }
-.show .tour { margin: 0 0 .35em; font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.show { padding: 16px 20px; background: var(--tint); border-radius: var(--radius); }
+.show .tour { margin: 0 0 6px; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.show-row { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.show .venue { font-size: 1.15rem; margin: 0; min-width: 0; }
+.show .venue .place { font-weight: inherit; color: inherit; }
+.show .venue .hours { font-weight: 400; color: var(--muted); white-space: nowrap; }
+.show .when { margin: 0; font-weight: 700; color: var(--ink); white-space: nowrap; flex-shrink: 0; }
+@media (max-width: 559px) {
+  .show .venue { font-size: 1.05rem; }
+  .show .venue .hours { display: block; font-size: .95rem; margin-top: 2px; }
+  .show .venue .dash { display: none; }
+}
+.show .tickets { margin: 6px 0 0; font-size: .9rem; color: var(--muted); }
+.show .note { margin: 2px 0 0; font-size: .9rem; }
 .empty { color: var(--muted); }
 
 .past summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; }

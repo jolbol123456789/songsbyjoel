@@ -1,8 +1,9 @@
         <li class="show" id="show-$id">
           $tour
-          <p class="when"><time datetime="$datetime">$when</time></p>
-          <h3 class="venue">$venue</h3>
-          <p class="place">$place</p>
+          <div class="show-row">
+            <h3 class="venue">$venue, <span class="place">$place</span>$hours</h3>
+            <p class="when"><time datetime="$datetime">$when</time></p>
+          </div>
           $tickets
           $note
         </li>
