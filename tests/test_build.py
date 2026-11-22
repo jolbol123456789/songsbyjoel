@@ -132,6 +132,7 @@ class TestShows(FixtureTest):
         self.assertIn("show-past", past)
         self.assertIn("<details", html)
         self.assertIn("Free, no tickets needed", html)
+        self.assertNotIn("Free, no tickets needed", past)
         self.assertRegex(html, r'href="https://tickets\.example\.org/a"[^>]*>Tickets</a>')
         self.assertIn('datetime="2026-12-24T19:30"', html)
 

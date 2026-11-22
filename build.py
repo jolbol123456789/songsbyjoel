@@ -550,7 +550,7 @@ class Site:
             player=self.spotify_player(release["links"].get("spotify")) if player else "",
         )
 
-    def show_item(self, show):
+    def show_item(self, show, past=False):
         # Shows at home in Sweden only need the city; elsewhere the country is added.
         place = show["city"]
         if show["country"] != HOME_COUNTRY:
@@ -560,7 +560,9 @@ class Site:
         if show["time"]:
             datetime_attr += f'T{show["time"]}'
             hours = show["time"] + (f'-{show["end_time"]}' if show["end_time"] else "")
-        if show["tickets"]["type"] == "free":
+        if past:
+            tickets = ""  # Ticket info does not matter once the show is over.
+        elif show["tickets"]["type"] == "free":
             tickets = '<p class="tickets">Free, no tickets needed</p>'
         else:
             label = esc(f'Tickets for {show["venue"]}, {show["date"].isoformat()}')
@@ -580,8 +582,8 @@ class Site:
             tour=f'<p class="tour">{esc(show["tour"])}</p>' if show["tour"] else "",
         )
 
-    def show_list(self, shows):
-        return '<ol class="shows">\n' + "\n".join(self.show_item(s) for s in shows) + "\n      </ol>"
+    def show_list(self, shows, past=False):
+        return '<ol class="shows">\n' + "\n".join(self.show_item(s, past) for s in shows) + "\n      </ol>"
 
     def page(self, *, path, title, description, current, content, root):
         """Wrap content in the base layout. path is relative to the site root ("" = home)."""
@@ -646,7 +648,7 @@ class Site:
             upcoming_html = self.show_list(upcoming)
         else:
             upcoming_html = '<p class="empty">No upcoming shows right now. Check back soon.</p>'
-        past_html = self.t.render("partials/past_shows.html", shows=self.show_list(past)) if past else ""
+        past_html = self.t.render("partials/past_shows.html", shows=self.show_list(past, past=True)) if past else ""
         content = self.t.render("shows.html", upcoming=upcoming_html, past=past_html)
         return self.page(path="shows/", title="Shows", current="shows", root=root, content=content,
                          description="Upcoming shows and concerts with Joel.")
