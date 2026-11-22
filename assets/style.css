@@ -59,16 +59,17 @@ p { margin: 0 0 .75em; }
 /* Header: mirrors the shop theme's header (shop.songsbyjoel.com, .header / .header__grid /
    .header__size--md / .drawer / .mobile-menu). Full width like the shop's .wrapper: no max-width,
    16px side padding on mobile and 32px from 640px, so the logo always sits at the left edge.
-   Mobile: menu button | logo | bag in a 64px row, menu slides in from the left (CSS only).
-   From 640px: logo | menu | bag, 100px logo, 24px above and below. */
+   Mobile: menu button | logo in a 64px row, menu slides in from the left (CSS only).
+   From 640px (.header--top-center): logo centred on top, the menu centred on a row below,
+   24px above and below. */
 .site-header { position: relative; z-index: 10; background: var(--bg); font-size: .875rem; line-height: 1.5; }
 .site-header .wrap {
   max-width: none; height: 64px; padding: 0 16px;
   display: grid; grid-template-columns: 1fr 6fr 1fr; align-items: center;
 }
 .logo { grid-column: 2; display: block; line-height: 0; text-decoration: none; }
-/* Same size as the shop's logo: 149px wide, max 48px tall on mobile, 149 x 60 on desktop. */
-.logo img { display: block; width: 149px; height: 48px; margin: 0 auto; object-fit: contain; }
+/* Same size as the shop's logo (--logo-width: 240px): max 48px tall on mobile, 240 x 50 on desktop. */
+.logo img { display: block; width: 240px; max-width: 100%; height: 48px; margin: 0 auto; object-fit: contain; }
 .header-icon { display: block; width: 18px; height: 18px; padding: 0; color: var(--ink); cursor: pointer; }
 .header-icon svg { display: block; width: 18px; height: 18px; }
 .header-icon:hover { color: rgba(28, 28, 29, .6); }
@@ -105,16 +106,17 @@ body:has(.menu-toggle:checked) { overflow: hidden; }
 @media (min-width: 640px) {
   .site-header .wrap {
     height: auto; padding: 24px 32px;
-    grid-template-columns: 1fr auto 1fr; column-gap: 1rem;
+    grid-template-columns: 1fr auto 1fr;
   }
-  .logo { grid-column: 1; justify-self: start; }
-  .logo img { height: auto; margin: 0; }
+  .logo { grid-column: 2; grid-row: 1; justify-self: center; }
+  .logo img { height: auto; }
   .menu-open, .menu-close, .menu-backdrop, .menu-toggle { display: none; }
   .menu {
-    grid-column: 2; justify-self: center; position: static; width: auto; height: auto; overflow: visible;
+    grid-column: 1 / -1; grid-row: 2; justify-self: center; position: static; width: auto; height: auto; overflow: visible;
     background: none; font-size: inherit; line-height: inherit;
     transform: none; visibility: visible; transition: none;
   }
+  .menu nav { padding-top: 8px; margin-top: 8px; }
   .menu ul { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 24px; }
   .menu nav a { display: block; padding: 8px 0; transition: none; }
   .menu nav a:hover { color: rgba(28, 28, 29, .6); }
