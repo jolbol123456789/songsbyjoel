@@ -121,7 +121,7 @@ body:has(.menu-toggle:checked) { overflow: hidden; }
 }
 
 main { flex: 1; padding-top: 36px; padding-bottom: 56px; }
-section { margin-bottom: 44px; }
+section { margin-bottom: 52px; }
 section > h2 { font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; font-family: var(--font-base); font-weight: 700; color: var(--muted); }
 
 /* Buttons: outlined ink pills, filled on hover */
@@ -153,7 +153,6 @@ section[aria-labelledby="latest-heading"] .release .cover { max-width: min(460px
 .buttons .is-primary { flex: 1 1 calc(50% - 4px); }
 .buttons .is-primary .button { width: 100%; background: var(--ink); color: var(--paper); min-height: 50px; font-size: 1rem; }
 .buttons .is-primary .button:hover { background: rgba(28, 28, 29, .82); border-color: rgba(28, 28, 29, .82); }
-.release-info .buttons + .player { margin-top: 16px; }
 section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9rem, 7vw, 2.6rem); }
 @media (min-width: 640px) {
   .releases .release { grid-template-columns: 200px 1fr; align-items: center; gap: 24px; }
@@ -196,10 +195,12 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 
 /* Footer: dark band like the shop */
 .site-footer { background: var(--ink); color: var(--paper); padding: 32px 0 40px; }
-.site-footer .social { margin-bottom: 20px; }
-.site-footer .social .button { color: var(--paper); border-color: rgba(245, 245, 243, .35); }
-.site-footer .social .button:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); }
-.site-footer p { margin: 0; font-family: var(--font-heading); font-weight: 700; font-size: 1.25rem; }
+.footer-groups { display: flex; flex-wrap: wrap; gap: 24px 56px; margin-bottom: 28px; }
+.footer-label { margin: 0 0 8px; font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .6; }
+.footer-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.footer-links a { text-decoration: none; font-weight: 700; }
+.footer-links a:hover { text-decoration: underline; }
+.footer-name { margin: 0; font-family: var(--font-heading); font-weight: 700; font-size: 1.25rem; }
 .site-footer :focus-visible { outline-color: var(--paper); }
 
 /* Spotify: click-to-load player (assets/player.js) */
@@ -227,11 +228,11 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 .player iframe { display: block; width: 100%; border: 0; border-radius: 12px; }
 
 /* Playlist: The Joel Collection */
-.playlist-card { padding: 22px 20px 24px; background: var(--tint); border-radius: var(--radius); }
-.playlist-title { font-size: clamp(1.6rem, 6vw, 2.1rem); margin-bottom: .3em; }
-.playlist-card > p { max-width: 34rem; margin-bottom: 16px; }
+.playlist-card { padding: 18px 20px 20px; background: var(--tint); border-radius: var(--radius); }
+.playlist-title { font-size: 1.35rem; margin-bottom: .2em; }
+.playlist-card > p { max-width: 34rem; margin-bottom: 14px; color: var(--muted); }
 .playlist-card .player { margin-bottom: 0; }
-@media (min-width: 640px) { .playlist-card { padding: 28px 28px 30px; } }
+@media (min-width: 640px) { .playlist-card { padding: 22px 24px 24px; } }
 
 /* Cookie consent for Spotify players (assets/player.js) */
 .consent {

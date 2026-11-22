@@ -157,13 +157,21 @@ class TestShows(FixtureTest):
         self.assertLess(latest.index('class="is-primary"><a class="button" href="https://open.spotify.com/album/79h1TX1O8Bu82rtGW6mkVz"'),
                         latest.index("Bandcamp"))
         self.assertIn('class="is-primary"><a class="button" href="https://music.apple.com/se/album/a/1"', latest)
-        self.assertLess(latest.index("Bandcamp"), latest.index('class="player"'))
+        self.assertNotIn('class="player"', latest)
         self.assertIn('fetchpriority="high"', latest)
 
     def test_css_and_js_urls_are_versioned(self):
         html = self.make().page("index.html")
         self.assertRegex(html, r'assets/style\.css\?v=[0-9a-f]{10}"')
         self.assertIn('assets/player.js?v=', html)
+
+    def test_footer_listen_and_follow(self):
+        fx = self.make()
+        for rel in ("index.html", "music/index.html", "shows/index.html"):
+            footer = fx.page(rel).split('<footer class="site-footer">')[1]
+            self.assertIn('<a href="https://open.spotify.com/artist/x">Spotify</a>', footer, rel)
+            self.assertIn('<a href="https://instagram.com/x">Instagram</a>', footer, rel)
+        self.assertNotIn("Listen everywhere", fx.page("index.html"))
 
     def test_home_merch(self):
         html = self.make().page("index.html")
@@ -262,14 +270,14 @@ class TestSpotifyPlayer(FixtureTest):
                     "https://evil.example/open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT"):
             self.assertIsNone(build.spotify_embed(url), url)
 
-    def test_player_on_home_only_and_loads_nothing_up_front(self):
+    def test_latest_release_has_buttons_not_a_player(self):
+        # Home keeps one clear action per service: a plain Spotify button, no extra player for the release.
         fx = self.make(releases=[release("song", "2026-01-01", links={"spotify": self.TRACK})])
-        home = fx.page("index.html")
-        self.assertIn('class="player"', home)
-        self.assertIn('data-embed="https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT"', home)
-        self.assertIn(f'class="player-start" href="{self.TRACK}"', home)
-        self.assertNotIn("<iframe", home)
-        self.assertNotIn("embed/track/4cOdK2wGLETKBW3PvgPWqT", fx.page("music/index.html"))
+        for rel in ("index.html", "music/index.html"):
+            html = fx.page(rel)
+            self.assertNotIn("embed/track/4cOdK2wGLETKBW3PvgPWqT", html, rel)
+            self.assertNotIn("<iframe", html, rel)
+        self.assertIn(f'<a class="button" href="{self.TRACK}">Spotify</a>', fx.page("index.html"))
 
     def test_no_player_without_embeddable_link(self):
         rel = release("solo", "2026-01-01", links={"bandcamp": "https://joel.bandcamp.com/track/solo"})

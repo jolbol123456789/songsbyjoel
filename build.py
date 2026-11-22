@@ -532,6 +532,10 @@ class Site:
         )
         return f'<ul class="{css_class}">{items}\n      </ul>'
 
+    def footer_links(self, links):
+        items = "".join(f'<li><a href="{esc(link["url"])}">{esc(link["label"])}</a></li>' for link in links)
+        return f'<ul class="footer-links">{items}</ul>' if items else ""
+
     def release_buttons(self, release, primary=False):
         services = [s for s in self.streaming if s["id"] in release["links"]]
         if not primary:
@@ -574,7 +578,7 @@ class Site:
                              title=esc(PLAYLIST_TITLE),
                              player=self.spotify_player(PLAYLIST_URL, f"Play {PLAYLIST_TITLE}"))
 
-    def release_card(self, release, root, heading, player=False, hero=False):
+    def release_card(self, release, root, heading, hero=False):
         return self.t.render(
             "partials/release.html",
             heading=heading,
@@ -587,7 +591,6 @@ class Site:
             date=long_date(release["release_date"]),
             buttons=self.release_buttons(release, primary=hero),
             loading='fetchpriority="high"' if hero else 'loading="lazy"',
-            player=self.spotify_player(release["links"].get("spotify")) if player else "",
         )
 
     def show_item(self, show, past=False):
@@ -643,7 +646,8 @@ class Site:
             nav=self.nav(root, current),
             shop_icon=self.shop_icon(),
             content=content,
-            social=self.link_list(self.social, "social"),
+            footer_listen=self.footer_links(self.streaming),
+            footer_follow=self.footer_links(self.social),
         )
 
     # -- pages -------------------------------------------------------------
@@ -652,7 +656,7 @@ class Site:
         root = "./"
         latest = latest_release(self.data["releases"], self.today)
         if latest:
-            release = self.release_card(latest, root, "h3", player=True, hero=True)
+            release = self.release_card(latest, root, "h3", hero=True)
         else:
             release = '<p>New music is on its way.</p>'
         upcoming, _ = split_shows(self.data["shows"], self.today)
@@ -663,8 +667,7 @@ class Site:
             next_show = ""
         content = self.t.render("home.html", release=release, next_show=next_show,
                                 merch=self.merch(root),
-                                playlist=self.playlist(),
-                                listen=self.link_list(self.streaming, "buttons"))
+                                playlist=self.playlist())
         return self.page(path="", title="", current="home", root=root, content=content,
                          description="Official site of Joel: new music, merch and upcoming shows.")
 

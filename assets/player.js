@@ -1,7 +1,8 @@
 // Spotify players and cookie consent.
 // The site sets no cookies of its own. Spotify's players may, so they only load after the visitor says yes
 // (GDPR/ePrivacy). The choice is remembered in localStorage and can be changed under "Cookie settings".
-// Without a yes, each player is a button that loads just that player when clicked.
+// Without a yes, each player is a button that loads just that player when clicked (that click is the consent).
+// The banner does not pop up by itself, so it never covers the page; it opens from "Cookie settings".
 // Without JavaScript, the button is an ordinary link to Spotify.
 (function () {
   var KEY = "spotify-consent";
@@ -34,12 +35,10 @@
   function init() {
     var banner = document.querySelector(".consent");
     var settings = document.querySelector(".cookie-settings");
-    var hasPlayers = !!document.querySelector(".player[data-embed]");
     var choice = getChoice();
 
     if (settings) settings.hidden = false;
     if (choice === "yes") loadAll();
-    else if (choice === null && hasPlayers && banner) banner.hidden = false;
 
     document.addEventListener("click", function (event) {
       var target = event.target;
