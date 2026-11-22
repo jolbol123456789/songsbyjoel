@@ -492,7 +492,6 @@ class Site:
     def playlist(self):
         return self.t.render("partials/playlist.html",
                              title=esc(PLAYLIST_TITLE),
-                             url=esc(PLAYLIST_URL),
                              player=self.spotify_player(PLAYLIST_URL, f"Play {PLAYLIST_TITLE}"))
 
     def release_card(self, release, root, heading, player=False):

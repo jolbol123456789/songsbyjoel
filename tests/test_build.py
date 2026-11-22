@@ -231,7 +231,8 @@ class TestPlaylist(FixtureTest):
             html = fx.page(rel)
             self.assertIn("The Joel Collection", html, rel)
             self.assertIn(self.EMBED, html, rel)
-            self.assertIn(f'href="{build.PLAYLIST_URL}">Save on Spotify', html, rel)
+            self.assertIn(f'class="player-start" href="{build.PLAYLIST_URL}"', html, rel)
+            self.assertNotIn("Save on Spotify", html, rel)
             self.assertNotIn("<iframe", html, rel)
             self.assertNotIn("si=", html, rel)
 

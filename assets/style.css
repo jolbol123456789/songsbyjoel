@@ -170,5 +170,5 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 .playlist-card { padding: 22px 20px 24px; background: var(--tint); border-radius: var(--radius); }
 .playlist-title { font-size: clamp(1.6rem, 6vw, 2.1rem); margin-bottom: .3em; }
 .playlist-card > p { max-width: 34rem; margin-bottom: 16px; }
-.playlist-card .player { margin-bottom: 16px; }
+.playlist-card .player { margin-bottom: 0; }
 @media (min-width: 640px) { .playlist-card { padding: 28px 28px 30px; } }
