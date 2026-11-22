@@ -1,5 +1,5 @@
 /* songsbyjoel.com – matches the shop (shop.songsbyjoel.com): Outfit + Rethink Sans,
-   mint background, near-black ink, 16px corners. Fonts are self-hosted (SIL OFL, see assets/fonts/). */
+   white background, near-black ink, 16px corners. Fonts are self-hosted (SIL OFL, see assets/fonts/). */
 @font-face {
   font-family: "Outfit"; font-weight: 400; font-style: normal; font-display: swap;
   src: url("fonts/outfit_n4.woff2") format("woff2");
@@ -14,10 +14,10 @@
 }
 
 :root {
-  --bg: #b9f2b7;          /* shop background */
+  --bg: #ffffff;          /* shop background */
   --ink: #1c1c1d;         /* shop primary / text */
   --paper: #f5f5f3;       /* text on ink */
-  --muted: #3f4a3f;       /* softer ink, still AA on mint */
+  --muted: #5c5c5e;       /* softer ink, AA on white and on --tint */
   --line: rgba(28, 28, 29, .16);
   --tint: rgba(28, 28, 29, .07);
   --radius: 16px;
