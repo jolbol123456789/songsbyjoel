@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import html
 import json
 import re
@@ -479,7 +480,19 @@ def show_date(day, this_year=None):
     return text if day.year == this_year else f"{text} {day.year}"
 
 
+def asset_versions(assets_dir):
+    """Short content hashes for style.css and player.js. Added to their URLs (?v=...) so browsers fetch
+    the new files right after a deploy instead of using an old cached copy."""
+    versions = {}
+    for name in ("style.css", "player.js"):
+        path = Path(assets_dir) / name
+        versions[name] = hashlib.sha256(path.read_bytes()).hexdigest()[:10] if path.is_file() else "0"
+    return versions
+
+
 class Site:
+    asset_versions = {"style.css": "0", "player.js": "0"}
+
     def __init__(self, data, templates_dir, base_url, today):
         self.data = data
         self.t = Templates(templates_dir)
@@ -623,6 +636,8 @@ class Site:
             share_image=esc(self.base_url + SHARE_IMAGE),
             share_width=SHARE_IMAGE_SIZE[0],
             share_height=SHARE_IMAGE_SIZE[1],
+            css_version=self.asset_versions["style.css"],
+            js_version=self.asset_versions["player.js"],
             root=esc(root),
             home_current=' aria-current="page"' if current == "home" else "",
             nav=self.nav(root, current),
@@ -739,6 +754,7 @@ def build(data_dir=ROOT / "data", templates_dir=ROOT / "templates", assets_dir=R
     assets_dir = Path(assets_dir)
     data, warnings = load_data(data_dir, assets_root=assets_dir.parent)
     site = Site(data, templates_dir, base_url, today or today_in_stockholm())
+    site.asset_versions = asset_versions(assets_dir)
     files = site.files()  # render everything before touching the output folder
 
     out_dir = Path(out_dir)

@@ -160,6 +160,11 @@ class TestShows(FixtureTest):
         self.assertLess(latest.index("Bandcamp"), latest.index('class="player"'))
         self.assertIn('fetchpriority="high"', latest)
 
+    def test_css_and_js_urls_are_versioned(self):
+        html = self.make().page("index.html")
+        self.assertRegex(html, r'assets/style\.css\?v=[0-9a-f]{10}"')
+        self.assertIn('assets/player.js?v=', html)
+
     def test_home_merch(self):
         html = self.make().page("index.html")
         merch = html.split('id="merch-heading"')[1].split("</section>")[0]
