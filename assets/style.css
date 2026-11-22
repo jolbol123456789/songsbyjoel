@@ -172,3 +172,24 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 .playlist-card > p { max-width: 34rem; margin-bottom: 16px; }
 .playlist-card .player { margin-bottom: 0; }
 @media (min-width: 640px) { .playlist-card { padding: 28px 28px 30px; } }
+
+/* Cookie consent for Spotify players (assets/player.js) */
+.consent {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  background: var(--ink); color: var(--paper);
+  padding: 18px 0 20px; box-shadow: 0 -12px 32px -16px rgba(0, 0, 0, .5);
+}
+.consent[hidden] { display: none; }
+.consent p { margin: 0 0 12px; font-size: .95rem; max-width: 40rem; }
+.consent .consent-title { font-family: var(--font-heading); font-weight: 700; font-size: 1.1rem; margin-bottom: 4px; }
+.consent a { color: var(--paper); }
+.consent-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.consent .button { color: var(--paper); border-color: var(--paper); background: transparent; cursor: pointer; font-family: inherit; }
+.consent .button:hover { background: var(--paper); color: var(--ink); }
+.consent :focus-visible { outline-color: var(--paper); }
+.cookie-settings {
+  margin-top: 14px; padding: 0; background: none; border: 0; cursor: pointer;
+  color: var(--paper); opacity: .75; font: inherit; font-size: .9rem; text-decoration: underline; text-underline-offset: 3px;
+}
+.cookie-settings:hover { opacity: 1; }
+.cookie-settings[hidden] { display: none; }

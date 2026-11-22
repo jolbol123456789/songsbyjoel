@@ -222,6 +222,18 @@ class TestSpotifyPlayer(FixtureTest):
         self.assertNotIn("embed/track/", self.make(releases=[rel]).page("index.html"))
 
 
+class TestConsent(FixtureTest):
+    def test_banner_on_every_page_hidden_until_js(self):
+        fx = self.make()
+        for rel in ("index.html", "music/index.html", "shows/index.html", "404.html"):
+            html = fx.page(rel)
+            self.assertIn('<div class="consent" role="region" aria-labelledby="consent-heading" hidden>', html, rel)
+            self.assertIn('data-consent="yes">Allow</button>', html, rel)
+            self.assertIn('data-consent="no">No thanks</button>', html, rel)
+            self.assertIn('class="cookie-settings" type="button" hidden', html, rel)
+            self.assertNotIn("<iframe", html, rel)
+
+
 class TestPlaylist(FixtureTest):
     EMBED = 'data-embed="https://open.spotify.com/embed/playlist/1STR4IBNDJNFmZtll9Xwew" data-height="352"'
 

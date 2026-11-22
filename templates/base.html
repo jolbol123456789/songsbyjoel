@@ -48,7 +48,19 @@ $content
     <div class="wrap">
       $social
       <p>Joel</p>
+      <button class="cookie-settings" type="button" hidden>Cookie settings</button>
     </div>
   </footer>
+  <div class="consent" role="region" aria-labelledby="consent-heading" hidden>
+    <div class="wrap">
+      <p id="consent-heading" class="consent-title">Spotify players</p>
+      <p>This site has no cookies of its own. The music players come from Spotify, which may set cookies and receive
+        your IP address when they load. Show them? <a href="https://www.spotify.com/legal/privacy-policy/">Spotify’s privacy policy</a></p>
+      <div class="consent-actions">
+        <button class="button" type="button" data-consent="yes">Allow</button>
+        <button class="button" type="button" data-consent="no">No thanks</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
