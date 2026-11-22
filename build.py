@@ -53,9 +53,9 @@ MONTHS = ["January", "February", "March", "April", "May", "June", "July",
           "August", "September", "October", "November", "December"]
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
-NAV = [("music", "Music"), ("merch", "Merch"), ("shows", "Shows")]
+NAV = [("home", "Home"), ("merch", "Merch"), ("shows", "Shows")]
 
-# Joel's Spotify playlist with all his songs, shown on the home and music pages.
+# Joel's Spotify playlist with all his songs, shown on the home page.
 PLAYLIST_TITLE = "The Joel Collection"
 PLAYLIST_URL = "https://open.spotify.com/playlist/1STR4IBNDJNFmZtll9Xwew"
 # Services shown as big filled buttons for the latest release on the home page (mobile visitors want these first).
@@ -496,7 +496,12 @@ class Site:
     def nav(self, root, current):
         items = []
         for key, label in NAV:
-            href = self.merch_tab_url() if key == "merch" else f"{root}{key}/"
+            if key == "home":
+                href = root
+            elif key == "merch":
+                href = self.merch_tab_url()
+            else:
+                href = f"{root}{key}/"
             aria = ' aria-current="page"' if key == current else ""
             items.append(f'<li><a href="{esc(href)}"{aria}>{label}</a></li>')
         return "\n          ".join(items)
@@ -626,7 +631,6 @@ class Site:
             css_version=self.asset_versions["style.css"],
             js_version=self.asset_versions["player.js"],
             root=esc(root),
-            home_current=' aria-current="page"' if current == "home" else "",
             nav=self.nav(root, current),
             content=content,
             footer_listen=self.footer_links(self.streaming),
@@ -654,21 +658,16 @@ class Site:
         return self.page(path="", title="", current="home", root=root, content=content,
                          description="Official site of Joel: new music, merch and upcoming shows.")
 
-    def music(self):
-        root = "../"
-        releases = visible_releases(self.data["releases"], self.today)
-        if releases:
-            cards = "\n".join(self.release_card(r, root, "h3") for r in releases)
-            release_html = f'<div class="releases">\n{cards}\n      </div>'
-        else:
-            release_html = "<p>New music is on its way.</p>"
-        content = self.t.render("music.html",
-                                playlist=self.playlist(),
-                                streaming=self.link_list(self.streaming, "buttons"),
-                                social=self.link_list(self.social, "buttons"),
-                                releases=release_html)
-        return self.page(path="music/", title="Music", current="music", root=root, content=content,
-                         description="Listen to Joel on Spotify, Apple Music, YouTube and Bandcamp, and follow along.")
+    def music_redirect(self):
+        """The old music page is gone (everything is on the home page). Old links land here
+        and are sent on to the home page; search engines are told the home page is the real one."""
+        home = self.base_url
+        return ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+                '<meta name="robots" content="noindex">\n'
+                f'<link rel="canonical" href="{esc(home)}">\n'
+                '<meta http-equiv="refresh" content="0; url=../">\n'
+                f'<title>{esc(SITE_NAME)}</title>\n</head>\n<body>\n'
+                '<p><a href="../">Go to the home page</a></p>\n</body>\n</html>\n')
 
     def shows(self):
         root = "../"
@@ -690,7 +689,7 @@ class Site:
                          description="This page could not be found.")
 
     def sitemap(self):
-        urls = "".join(f"  <url><loc>{esc(self.base_url + p)}</loc></url>\n" for p in ("", "music/", "shows/"))
+        urls = "".join(f"  <url><loc>{esc(self.base_url + p)}</loc></url>\n" for p in ("", "shows/"))
         return ('<?xml version="1.0" encoding="UTF-8"?>\n'
                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                 f"{urls}</urlset>\n")
@@ -701,7 +700,7 @@ class Site:
     def files(self):
         files = {
             "index.html": self.home(),
-            "music/index.html": self.music(),
+            "music/index.html": self.music_redirect(),
             "shows/index.html": self.shows(),
             "404.html": self.not_found(),
             "sitemap.xml": self.sitemap(),

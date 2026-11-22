@@ -167,7 +167,7 @@ class TestShows(FixtureTest):
 
     def test_footer_listen_and_follow(self):
         fx = self.make()
-        for rel in ("index.html", "music/index.html", "shows/index.html"):
+        for rel in ("index.html", "shows/index.html"):
             footer = fx.page(rel).split('<footer class="site-footer">')[1]
             self.assertIn('<a href="https://open.spotify.com/artist/x">Spotify</a>', footer, rel)
             self.assertIn('<a href="https://instagram.com/x">Instagram</a>', footer, rel)
@@ -232,11 +232,7 @@ class TestReleases(FixtureTest):
         home = fx.page("index.html")
         self.assertIn("release-newest", home)
         self.assertNotIn("release-old", home)
-        music = fx.page("music/index.html")
-        self.assertNotIn("release-future", music)
-        self.assertNotIn("Future", music)
-        order = [m.group(1) for m in re.finditer(r'id="release-([a-z-]+)"', music)]
-        self.assertEqual(order, ["newest", "middle", "old"])
+        self.assertNotIn("release-future", home)
 
     def test_future_release_appears_on_release_day(self):
         fx = self.make(releases=[release("future", "2026-12-06")])
@@ -246,7 +242,7 @@ class TestReleases(FixtureTest):
     def test_only_existing_links_shown_in_service_order(self):
         rel = release("song", "2026-01-01", links={"bandcamp": "https://joel.bandcamp.com/track/song",
                                                    "spotify": "https://open.spotify.com/track/song"})
-        html = self.make(releases=[rel]).page("music/index.html")
+        html = self.make(releases=[rel]).page("index.html")
         card = html[html.index('id="release-song"'):]
         self.assertLess(card.index(">Spotify<"), card.index(">Bandcamp<"))
         rel = release("solo", "2026-01-01", links={"bandcamp": "https://joel.bandcamp.com/track/solo"})
@@ -275,10 +271,9 @@ class TestSpotifyPlayer(FixtureTest):
     def test_latest_release_has_buttons_not_a_player(self):
         # Home keeps one clear action per service: a plain Spotify button, no extra player for the release.
         fx = self.make(releases=[release("song", "2026-01-01", links={"spotify": self.TRACK})])
-        for rel in ("index.html", "music/index.html"):
-            html = fx.page(rel)
-            self.assertNotIn("embed/track/4cOdK2wGLETKBW3PvgPWqT", html, rel)
-            self.assertNotIn("<iframe", html, rel)
+        html = fx.page("index.html")
+        self.assertNotIn("embed/track/4cOdK2wGLETKBW3PvgPWqT", html)
+        self.assertNotIn("<iframe", html)
         self.assertIn(f'<a class="button" href="{self.TRACK}">Spotify</a>', fx.page("index.html"))
 
     def test_no_player_without_embeddable_link(self):
@@ -289,7 +284,7 @@ class TestSpotifyPlayer(FixtureTest):
 class TestConsent(FixtureTest):
     def test_banner_on_every_page_hidden_until_js(self):
         fx = self.make()
-        for rel in ("index.html", "music/index.html", "shows/index.html", "404.html"):
+        for rel in ("index.html", "shows/index.html", "404.html"):
             html = fx.page(rel)
             self.assertIn('<div class="consent" role="region" aria-labelledby="consent-heading" hidden>', html, rel)
             self.assertIn('data-consent="yes">Allow</button>', html, rel)
@@ -301,9 +296,9 @@ class TestConsent(FixtureTest):
 class TestPlaylist(FixtureTest):
     EMBED = 'data-embed="https://open.spotify.com/embed/playlist/1STR4IBNDJNFmZtll9Xwew" data-height="352"'
 
-    def test_playlist_on_home_and_music(self):
+    def test_playlist_on_home(self):
         fx = self.make()
-        for rel in ("index.html", "music/index.html"):
+        for rel in ("index.html",):
             html = fx.page(rel)
             self.assertIn("The Joel Collection", html, rel)
             self.assertIn(self.EMBED, html, rel)
@@ -411,18 +406,18 @@ class TestEscaping(FixtureTest):
                    tickets={"type": "link", "url": 'https://t.example.org/?a=1&b="2"'})
         fx = self.make(links=links, releases=[rel], shows=[shw])
         out = fx.build()
-        for rel_path in ("index.html", "music/index.html", "shows/index.html"):
+        for rel_path in ("index.html", "shows/index.html"):
             html = (out / rel_path).read_text()
             self.assertNotIn("<script>", html, rel_path)
             self.assertIn("&lt;script&gt;", html, rel_path)
         shows_html = (out / "shows/index.html").read_text()
         self.assertIn("A&amp;B", shows_html)
         self.assertIn("?a=1&amp;b=&quot;2&quot;", shows_html)
-        self.assertIn("&amp; &quot;more&quot;", (out / "music/index.html").read_text())
+        self.assertIn("&amp; &quot;more&quot;", (out / "index.html").read_text())
 
 
 class TestPagesAndMenu(FixtureTest):
-    PAGES = {"index.html": ("./", "home"), "music/index.html": ("../", "music"),
+    PAGES = {"index.html": ("./", "home"),
              "shows/index.html": ("../", "shows"), "404.html": ("/songsbyjoel/", None)}
 
     def test_menu_on_every_page(self):
@@ -432,13 +427,13 @@ class TestPagesAndMenu(FixtureTest):
             nav = html[html.index('<nav aria-label="Main">'):html.index("</nav>")]
             hrefs = re.findall(r'<a href="([^"]+)"', nav)
             labels = re.findall(r">(\w+)</a>", nav)
-            self.assertEqual(labels, ["Music", "Merch", "Shows"], rel)
-            self.assertEqual(hrefs, [f"{root}music/", "https://shop.songsbyjoel.com/en-sek/products/walking-billboard-tee", f"{root}shows/"], rel)
+            self.assertEqual(labels, ["Home", "Merch", "Shows"], rel)
+            self.assertEqual(hrefs, [root, "https://shop.songsbyjoel.com/en-sek/products/walking-billboard-tee", f"{root}shows/"], rel)
             self.assertIn(f'<a class="logo" href="{root}"', html, rel)
             self.assertNotIn("target=", nav, rel)  # Merch opens in the same tab
             marked = re.findall(r'href="([^"]+)" aria-current="page"', html)
             if current == "home":
-                self.assertEqual(marked, ["./"], rel)
+                self.assertEqual(marked, ["./"], rel)  # the Home tab, not the logo
             elif current:
                 self.assertEqual(marked, [f"{root}{current}/"], rel)
             else:
@@ -446,7 +441,7 @@ class TestPagesAndMenu(FixtureTest):
 
     def test_meta_tags(self):
         out = self.make().build()
-        for rel, canonical in (("index.html", BASE), ("music/index.html", BASE + "music/"),
+        for rel, canonical in (("index.html", BASE),
                                ("shows/index.html", BASE + "shows/")):
             html = (out / rel).read_text()
             self.assertIn(f'<link rel="canonical" href="{canonical}">', html)
@@ -459,12 +454,21 @@ class TestPagesAndMenu(FixtureTest):
 
     def test_sitemap_robots_and_cname(self):
         out = self.make().build()
-        self.assertIn(f"<loc>{BASE}music/</loc>", (out / "sitemap.xml").read_text())
+        sitemap = (out / "sitemap.xml").read_text()
+        self.assertIn(f"<loc>{BASE}shows/</loc>", sitemap)
+        self.assertNotIn("music/", sitemap)
         self.assertIn(f"Sitemap: {BASE}sitemap.xml", (out / "robots.txt").read_text())
         self.assertFalse((out / "CNAME").exists())
         out = self.make().build(base_url="https://songsbyjoel.com")
         self.assertEqual((out / "CNAME").read_text().strip(), "songsbyjoel.com")
-        self.assertIn('href="/music/"', (out / "404.html").read_text())
+        self.assertIn('href="/shows/"', (out / "404.html").read_text())
+
+    def test_old_music_page_redirects_home(self):
+        html = (self.make().build() / "music/index.html").read_text()
+        self.assertIn('<meta http-equiv="refresh" content="0; url=../">', html)
+        self.assertIn('<a href="../">', html)  # works without the refresh too
+        self.assertIn('<meta name="robots" content="noindex">', html)
+        self.assertIn(f'<link rel="canonical" href="{BASE}">', html)
 
     def test_build_is_deterministic(self):
         fx = self.make(releases=[release("a", "2026-01-01"), release("b", "2026-01-01")],
