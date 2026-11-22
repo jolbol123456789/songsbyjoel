@@ -51,10 +51,17 @@ WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 NAV = [("music", "Music"), ("merch", "Merch"), ("shows", "Shows")]
 
+# Joel's Spotify playlist with all his songs, shown on the home and music pages.
+PLAYLIST_TITLE = "The Joel Collection"
+PLAYLIST_URL = "https://open.spotify.com/playlist/1STR4IBNDJNFmZtll9Xwew"
+
 ID_RE = re.compile(r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 TIME_RE = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 COUNTRY_RE = re.compile(r"^[A-Z]{2}$")
+SPOTIFY_RE = re.compile(
+    r"^https://open\.spotify\.com/(?:intl-[a-z]{2}(?:-[a-z]{2,4})?/)?"
+    r"(track|album|playlist|artist)/([A-Za-z0-9]{22})(?:[/?#].*)?$")
 
 
 # --------------------------------------------------------------------------
@@ -415,6 +422,15 @@ class Templates:
         return self.cache[name].substitute(values)
 
 
+def spotify_embed(url):
+    """(embed URL, height) for a Spotify link, or None if it is not one we can embed."""
+    match = SPOTIFY_RE.match(url or "")
+    if not match:
+        return None
+    kind, item_id = match.groups()
+    return f"https://open.spotify.com/embed/{kind}/{item_id}", 152 if kind == "track" else 352
+
+
 def long_date(day):
     return f"{day.day} {MONTHS[day.month - 1]} {day.year}"
 
@@ -458,7 +474,28 @@ class Site:
                  for s in self.streaming if s["id"] in release["links"]]
         return self.link_list(links, "buttons")
 
-    def release_card(self, release, root, heading):
+    def spotify_player(self, url, label="Play on Spotify"):
+        """Click-to-load Spotify player. Nothing is fetched from Spotify until the visitor
+        clicks; without JavaScript the button is a plain link to Spotify."""
+        embed = spotify_embed(url)
+        if not embed:
+            return ""
+        src, height = embed
+        return (f'<div class="player" data-embed="{esc(src)}" data-height="{height}">\n'
+                f'            <a class="player-start" href="{esc(url)}">\n'
+                f'              <span class="player-icon" aria-hidden="true"></span>\n'
+                f'              <span class="player-text"><strong>{esc(label)}</strong>'
+                f'<small>Loads Spotify’s player, which may set cookies.</small></span>\n'
+                f'            </a>\n'
+                f'          </div>')
+
+    def playlist(self):
+        return self.t.render("partials/playlist.html",
+                             title=esc(PLAYLIST_TITLE),
+                             url=esc(PLAYLIST_URL),
+                             player=self.spotify_player(PLAYLIST_URL, f"Play {PLAYLIST_TITLE}"))
+
+    def release_card(self, release, root, heading, player=False):
         return self.t.render(
             "partials/release.html",
             heading=heading,
@@ -470,6 +507,7 @@ class Site:
             date_iso=release["release_date"].isoformat(),
             date=long_date(release["release_date"]),
             buttons=self.release_buttons(release),
+            player=self.spotify_player(release["links"].get("spotify")) if player else "",
         )
 
     def show_item(self, show):
@@ -524,7 +562,7 @@ class Site:
         root = "./"
         latest = latest_release(self.data["releases"], self.today)
         if latest:
-            release = self.release_card(latest, root, "h3")
+            release = self.release_card(latest, root, "h3", player=True)
         else:
             release = '<p>New music is on its way.</p>'
         upcoming, _ = split_shows(self.data["shows"], self.today)
@@ -534,6 +572,7 @@ class Site:
         else:
             next_show = ""
         content = self.t.render("home.html", release=release, next_show=next_show,
+                                playlist=self.playlist(),
                                 listen=self.link_list(self.streaming, "buttons"))
         return self.page(path="", title="", current="home", root=root, content=content,
                          description="Official site of Joel – new music, merch and upcoming shows.")
@@ -547,6 +586,7 @@ class Site:
         else:
             release_html = "<p>New music is on its way.</p>"
         content = self.t.render("music.html",
+                                playlist=self.playlist(),
                                 streaming=self.link_list(self.streaming, "buttons"),
                                 social=self.link_list(self.social, "buttons"),
                                 releases=release_html)

@@ -62,10 +62,9 @@ p { margin: 0 0 .75em; }
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   min-height: 64px; padding-top: 12px; padding-bottom: 12px;
 }
-.logo {
-  font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem; line-height: 1;
-  text-decoration: none; letter-spacing: -.01em;
-}
+.logo { display: block; justify-self: start; text-decoration: none; }
+.logo img { height: 40px; width: auto; }
+@media (min-width: 640px) { .logo img { height: 48px; } }
 .site-header ul { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
 .site-header nav a {
   display: block; padding: 8px 0;
@@ -87,19 +86,17 @@ main { flex: 1; padding-top: 36px; padding-bottom: 56px; }
 section { margin-bottom: 44px; }
 section > h2 { font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; font-family: var(--font-base); font-weight: 700; color: var(--muted); }
 
-/* Buttons: filled ink pills like the shop's primary button */
+/* Buttons: outlined ink pills, filled on hover */
 .buttons, .social { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .button {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px; padding: 10px 18px;
-  background: var(--ink); color: var(--paper);
+  background: transparent; color: var(--ink);
   border: 2px solid var(--ink); border-radius: var(--radius);
   text-decoration: none; font-weight: 700; font-size: .95rem; line-height: 1.2;
   transition: background-color .15s, color .15s;
 }
-.button:hover { background: transparent; color: var(--ink); }
-.social .button { background: transparent; color: var(--ink); }
-.social .button:hover { background: var(--ink); color: var(--paper); }
+.button:hover { background: var(--ink); color: var(--paper); }
 
 /* Releases */
 .releases { display: grid; gap: 32px; }
@@ -144,3 +141,34 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 .site-footer .social .button:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); }
 .site-footer p { margin: 0; font-family: var(--font-heading); font-weight: 700; font-size: 1.25rem; }
 .site-footer :focus-visible { outline-color: var(--paper); }
+
+/* Spotify: click-to-load player (assets/player.js) */
+.player { margin: 4px 0 14px; max-width: 460px; }
+.player-start {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 18px 12px 12px; min-height: 64px;
+  background: var(--ink); color: var(--paper);
+  border-radius: var(--radius); text-decoration: none;
+  transition: transform .15s;
+}
+.player-start:hover { transform: translateY(-1px); }
+.player-icon {
+  flex: none; width: 40px; height: 40px; border-radius: 50%;
+  background: var(--bg); position: relative;
+}
+.player-icon::after {
+  content: ""; position: absolute; left: 16px; top: 12px;
+  border-style: solid; border-width: 8px 0 8px 13px;
+  border-color: transparent transparent transparent var(--ink);
+}
+.player-text { display: flex; flex-direction: column; line-height: 1.25; }
+.player-text strong { font-size: 1rem; }
+.player-text small { font-size: .78rem; opacity: .7; }
+.player iframe { display: block; width: 100%; border: 0; border-radius: 12px; }
+
+/* Playlist: The Joel Collection */
+.playlist-card { padding: 22px 20px 24px; background: var(--tint); border-radius: var(--radius); }
+.playlist-title { font-size: clamp(1.6rem, 6vw, 2.1rem); margin-bottom: .3em; }
+.playlist-card > p { max-width: 34rem; margin-bottom: 16px; }
+.playlist-card .player { margin-bottom: 16px; }
+@media (min-width: 640px) { .playlist-card { padding: 28px 28px 30px; } }

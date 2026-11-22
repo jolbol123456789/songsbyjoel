@@ -194,6 +194,51 @@ class TestReleases(FixtureTest):
         self.assertIn("New music is on its way", self.make().page("index.html"))
 
 
+class TestSpotifyPlayer(FixtureTest):
+    TRACK = "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT"
+
+    def test_embed_url(self):
+        self.assertEqual(build.spotify_embed(self.TRACK),
+                         ("https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT", 152))
+        self.assertEqual(build.spotify_embed(
+            "https://open.spotify.com/intl-sv/album/4cOdK2wGLETKBW3PvgPWqT?si=abc"),
+            ("https://open.spotify.com/embed/album/4cOdK2wGLETKBW3PvgPWqT", 352))
+        for url in (None, "", "https://example.com/PLACEHOLDER-release-spotify",
+                    "https://open.spotify.com/track/short", "http://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT",
+                    "https://evil.example/open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT"):
+            self.assertIsNone(build.spotify_embed(url), url)
+
+    def test_player_on_home_only_and_loads_nothing_up_front(self):
+        fx = self.make(releases=[release("song", "2026-01-01", links={"spotify": self.TRACK})])
+        home = fx.page("index.html")
+        self.assertIn('class="player"', home)
+        self.assertIn('data-embed="https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT"', home)
+        self.assertIn(f'class="player-start" href="{self.TRACK}"', home)
+        self.assertNotIn("<iframe", home)
+        self.assertNotIn("embed/track/4cOdK2wGLETKBW3PvgPWqT", fx.page("music/index.html"))
+
+    def test_no_player_without_embeddable_link(self):
+        rel = release("solo", "2026-01-01", links={"bandcamp": "https://joel.bandcamp.com/track/solo"})
+        self.assertNotIn("embed/track/", self.make(releases=[rel]).page("index.html"))
+
+
+class TestPlaylist(FixtureTest):
+    EMBED = 'data-embed="https://open.spotify.com/embed/playlist/1STR4IBNDJNFmZtll9Xwew" data-height="352"'
+
+    def test_playlist_on_home_and_music(self):
+        fx = self.make()
+        for rel in ("index.html", "music/index.html"):
+            html = fx.page(rel)
+            self.assertIn("The Joel Collection", html, rel)
+            self.assertIn(self.EMBED, html, rel)
+            self.assertIn(f'href="{build.PLAYLIST_URL}">Save on Spotify', html, rel)
+            self.assertNotIn("<iframe", html, rel)
+            self.assertNotIn("si=", html, rel)
+
+    def test_playlist_not_on_shows(self):
+        self.assertNotIn("The Joel Collection", self.make().page("shows/index.html"))
+
+
 class TestValidation(FixtureTest):
     def test_missing_field(self):
         rel = release("song", "2026-01-01")
