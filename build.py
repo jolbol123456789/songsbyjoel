@@ -63,7 +63,7 @@ PRIMARY_SERVICES = ("spotify", "apple_music")
 
 # Visitor statistics through GoatCounter (no cookies). The site code is the "xxx" in xxx.goatcounter.com.
 # Empty = no statistics script on the site at all.
-GOATCOUNTER_CODE = ""
+GOATCOUNTER_CODE = "songsbyjoel"
 GOATCOUNTER_PRIVACY_URL = "https://www.goatcounter.com/help/privacy"
 # Merch featured on the home page. Title and a link to the product in the shop, no prices.
 # The image is a local copy (no requests to the shop's image servers).
