@@ -60,6 +60,11 @@ PLAYLIST_TITLE = "The Joel Collection"
 PLAYLIST_URL = "https://open.spotify.com/playlist/1STR4IBNDJNFmZtll9Xwew"
 # Services shown as big filled buttons for the latest release on the home page (mobile visitors want these first).
 PRIMARY_SERVICES = ("spotify", "apple_music")
+
+# Visitor statistics through GoatCounter (no cookies). The site code is the "xxx" in xxx.goatcounter.com.
+# Empty = no statistics script on the site at all.
+GOATCOUNTER_CODE = ""
+GOATCOUNTER_PRIVACY_URL = "https://www.goatcounter.com/help/privacy"
 # Merch featured on the home page. Title and a link to the product in the shop, no prices.
 # The image is a local copy (no requests to the shop's image servers).
 FEATURED_MERCH = [
@@ -458,6 +463,16 @@ def spotify_embed(url):
     return f"https://open.spotify.com/embed/{kind}/{item_id}", 152 if kind == "track" else 352
 
 
+def click_attrs(name, title):
+    """Attributes that make stats.js count a click on a link as "click/<name>"."""
+    return f' data-click="{esc(name)}" data-click-title="{esc(title)}"'
+
+
+def slug(url):
+    """Last part of a URL's path, e.g. "walking-billboard-tee"."""
+    return urlsplit(url).path.rstrip("/").rsplit("/", 1)[-1] or "shop"
+
+
 def long_date(day):
     return f"{day.day} {MONTHS[day.month - 1]} {day.year}"
 
@@ -472,16 +487,16 @@ def asset_versions(assets_dir):
     """Short content hashes for style.css and player.js. Added to their URLs (?v=...) so browsers fetch
     the new files right after a deploy instead of using an old cached copy."""
     versions = {}
-    for name in ("style.css", "player.js"):
+    for name in ("style.css", "player.js", "stats.js"):
         path = Path(assets_dir) / name
         versions[name] = hashlib.sha256(path.read_bytes()).hexdigest()[:10] if path.is_file() else "0"
     return versions
 
 
 class Site:
-    asset_versions = {"style.css": "0", "player.js": "0"}
+    asset_versions = {"style.css": "0", "player.js": "0", "stats.js": "0"}
 
-    def __init__(self, data, templates_dir, base_url, today):
+    def __init__(self, data, templates_dir, base_url, today, goatcounter_code=None):
         self.data = data
         self.t = Templates(templates_dir)
         self.base_url = normalize_base_url(base_url)
@@ -490,6 +505,7 @@ class Site:
         self.streaming = data["links"]["streaming"]
         self.social = data["links"]["social"]
         self.merch_url = data["links"]["merch_url"]
+        self.goatcounter_code = GOATCOUNTER_CODE if goatcounter_code is None else goatcounter_code
 
     # -- shared pieces ---------------------------------------------------
 
@@ -503,7 +519,8 @@ class Site:
             else:
                 href = f"{root}{key}/"
             aria = ' aria-current="page"' if key == current else ""
-            items.append(f'<li><a href="{esc(href)}"{aria}>{label}</a></li>')
+            track = click_attrs("nav/merch", "Menu: Merch") if key == "merch" else ""
+            items.append(f'<li><a href="{esc(href)}"{aria}{track}>{label}</a></li>')
         return "\n          ".join(items)
 
     def merch_tab_url(self):
@@ -512,34 +529,28 @@ class Site:
             return FEATURED_MERCH[0]["url"]
         return self.merch_url
 
-    def link_list(self, links, css_class):
-        if not links:
-            return ""
-        items = "".join(
-            f'\n        <li><a class="button" href="{esc(link["url"])}">{esc(link["label"])}</a></li>'
-            for link in links
-        )
-        return f'<ul class="{css_class}">{items}\n      </ul>'
-
     def footer_links(self, links):
-        items = "".join(f'<li><a href="{esc(link["url"])}">{esc(link["label"])}</a></li>' for link in links)
+        items = "".join(f'<li><a href="{esc(link["url"])}"'
+                        f'{click_attrs("footer/" + link["id"], "Footer: " + link["label"])}>'
+                        f'{esc(link["label"])}</a></li>' for link in links)
         return f'<ul class="footer-links">{items}</ul>' if items else ""
 
     def release_buttons(self, release, primary=False):
+        """Streaming buttons. Each click is counted as "click/<release id>/<service id>"."""
         services = [s for s in self.streaming if s["id"] in release["links"]]
-        if not primary:
-            links = [{"label": s["label"], "url": release["links"][s["id"]]} for s in services]
-            return self.link_list(links, "buttons")
-        # Home page: Spotify and Apple Music first, as big filled buttons; the rest stay outlined.
-        services.sort(key=lambda s: s["id"] not in PRIMARY_SERVICES)
+        if primary:
+            # Home page: Spotify and Apple Music first, as big filled buttons; the rest stay outlined.
+            services.sort(key=lambda s: s["id"] not in PRIMARY_SERVICES)
         primary_class = ' class="is-primary"'
         items = "".join(
-            f'\n        <li{primary_class if s["id"] in PRIMARY_SERVICES else ""}>'
-            f'<a class="button" href="{esc(release["links"][s["id"]])}">{esc(s["label"])}</a></li>'
+            f'\n        <li{primary_class if primary and s["id"] in PRIMARY_SERVICES else ""}>'
+            f'<a class="button" href="{esc(release["links"][s["id"]])}"'
+            f'{click_attrs(release["id"] + "/" + s["id"], release["title"] + ": " + s["label"])}>'
+            f'{esc(s["label"])}</a></li>'
             for s in services)
         return f'<ul class="buttons">{items}\n      </ul>' if items else ""
 
-    def spotify_player(self, url, label="Play on Spotify"):
+    def spotify_player(self, url, label="Play on Spotify", click=""):
         """Click-to-load Spotify player. Nothing is fetched from Spotify until the visitor
         clicks; without JavaScript the button is a plain link to Spotify."""
         embed = spotify_embed(url)
@@ -547,7 +558,7 @@ class Site:
             return ""
         src, height = embed
         return (f'<div class="player" data-embed="{esc(src)}" data-height="{height}">\n'
-                f'            <a class="player-start" href="{esc(url)}">\n'
+                f'            <a class="player-start" href="{esc(url)}"{click}>\n'
                 f'              <span class="player-icon" aria-hidden="true"></span>\n'
                 f'              <span class="player-text"><strong>{esc(label)}</strong>'
                 f'<small>Loads Spotify’s player, which may set cookies.</small></span>\n'
@@ -558,14 +569,16 @@ class Site:
         if not self.merch_url or not FEATURED_MERCH:
             return ""
         items = "".join(self.t.render("partials/merch_item.html",
-                                      title=esc(m["title"]), url=esc(m["url"]), image=esc(root + m["image"]))
+                                      title=esc(m["title"]), url=esc(m["url"]), image=esc(root + m["image"]),
+                                      click=click_attrs("merch/" + slug(m["url"]), "Merch: " + m["title"]))
                         for m in FEATURED_MERCH)
         return self.t.render("partials/merch.html", items=items)
 
     def playlist(self):
         return self.t.render("partials/playlist.html",
                              title=esc(PLAYLIST_TITLE),
-                             player=self.spotify_player(PLAYLIST_URL, f"Play {PLAYLIST_TITLE}"))
+                             player=self.spotify_player(PLAYLIST_URL, f"Play {PLAYLIST_TITLE}",
+                                                        click_attrs("playlist/spotify", "Playlist: Spotify")))
 
     def release_card(self, release, root, heading, hero=False):
         return self.t.render(
@@ -599,7 +612,8 @@ class Site:
         else:
             label = esc(f'Tickets for {show["venue"]}, {show["date"].isoformat()}')
             tickets = (f'<p class="tickets"><a class="button" href="{esc(show["tickets"]["url"])}" '
-                       f'aria-label="{label}">Tickets</a></p>')
+                       f'aria-label="{label}"'
+                       f'{click_attrs("tickets/" + show["id"], "Tickets: " + show["venue"])}>Tickets</a></p>')
         note = f'<p class="note">{esc(show["note"])}</p>' if show["note"] else ""
         return self.t.render(
             "partials/show.html",
@@ -630,12 +644,20 @@ class Site:
             share_height=SHARE_IMAGE_SIZE[1],
             css_version=self.asset_versions["style.css"],
             js_version=self.asset_versions["player.js"],
+            stats_script=self.stats_script(root),
             root=esc(root),
             nav=self.nav(root, current),
             content=content,
             footer_listen=self.footer_links(self.streaming),
             footer_follow=self.footer_links(self.social),
         )
+
+    def stats_script(self, root):
+        if not self.goatcounter_code:
+            return ""
+        endpoint = f"https://{self.goatcounter_code}.goatcounter.com/count"
+        return (f'\n  <script src="{esc(root)}assets/stats.js?v={self.asset_versions["stats.js"]}" '
+                f'data-endpoint="{esc(endpoint)}" defer></script>')
 
     # -- pages -------------------------------------------------------------
 
@@ -688,8 +710,21 @@ class Site:
         return self.page(path="404.html", title="Page not found", current="", root=root, content=content,
                          description="This page could not be found.")
 
+    def privacy(self):
+        root = "../"
+        stats = ""
+        if self.goatcounter_code:
+            stats = self.t.render("partials/privacy_stats.html", privacy_url=esc(GOATCOUNTER_PRIVACY_URL))
+        contact = next((s for s in self.social if s["id"] == "instagram"), None)
+        contact_html = (f'<a href="{esc(contact["url"])}">a message on {esc(contact["label"])}</a>'
+                        if contact else "a message on social media")
+        content = self.t.render("privacy.html", stats=stats, contact=contact_html)
+        return self.page(path="privacy/", title="Privacy", current="", root=root, content=content,
+                         description="How songsbyjoel.com handles your data.")
+
     def sitemap(self):
-        urls = "".join(f"  <url><loc>{esc(self.base_url + p)}</loc></url>\n" for p in ("", "shows/"))
+        urls = "".join(f"  <url><loc>{esc(self.base_url + p)}</loc></url>\n"
+                       for p in ("", "shows/", "privacy/"))
         return ('<?xml version="1.0" encoding="UTF-8"?>\n'
                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                 f"{urls}</urlset>\n")
@@ -702,6 +737,7 @@ class Site:
             "index.html": self.home(),
             "music/index.html": self.music_redirect(),
             "shows/index.html": self.shows(),
+            "privacy/index.html": self.privacy(),
             "404.html": self.not_found(),
             "sitemap.xml": self.sitemap(),
             "robots.txt": self.robots(),
@@ -734,11 +770,11 @@ def prepare_out_dir(out_dir):
 
 
 def build(data_dir=ROOT / "data", templates_dir=ROOT / "templates", assets_dir=ROOT / "assets",
-          out_dir=ROOT / "_site", base_url=DEFAULT_BASE_URL, today=None):
+          out_dir=ROOT / "_site", base_url=DEFAULT_BASE_URL, today=None, goatcounter_code=None):
     """Validate, then write the whole site. Returns the list of warnings."""
     assets_dir = Path(assets_dir)
     data, warnings = load_data(data_dir, assets_root=assets_dir.parent)
-    site = Site(data, templates_dir, base_url, today or today_in_stockholm())
+    site = Site(data, templates_dir, base_url, today or today_in_stockholm(), goatcounter_code)
     site.asset_versions = asset_versions(assets_dir)
     files = site.files()  # render everything before touching the output folder
 

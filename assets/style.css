@@ -255,3 +255,14 @@ section[aria-labelledby="latest-heading"] .release-title { font-size: clamp(1.9r
 }
 .cookie-settings:hover { opacity: 1; }
 .cookie-settings[hidden] { display: none; }
+
+/* Privacy page and its link in the footer */
+.footer-privacy { margin: 10px 0 0; font-size: .9rem; }
+.footer-privacy a { color: var(--paper); opacity: .75; text-underline-offset: 3px; }
+.footer-privacy a:hover { opacity: 1; }
+.prose { max-width: 40rem; }
+.prose h2 { margin-top: 1.6em; }
+.stats-optout { margin: 18px 0 0; padding: 16px 18px; background: var(--tint); border-radius: var(--radius); }
+.stats-optout[hidden] { display: none; }
+.stats-optout p { margin: 0 0 10px; }
+.stats-optout .button { cursor: pointer; font-family: inherit; background: transparent; }

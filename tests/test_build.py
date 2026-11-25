@@ -63,10 +63,11 @@ class Fixture:
     def load(self):
         return build.load_data(self.dir / "data", assets_root=self.dir)
 
-    def build(self, today=TODAY, base_url=BASE):
+    def build(self, today=TODAY, base_url=BASE, goatcounter_code=""):
         out = self.dir / "_site"
         build.build(data_dir=self.dir / "data", templates_dir=REPO / "templates",
-                    assets_dir=self.dir / "assets", out_dir=out, base_url=base_url, today=today)
+                    assets_dir=self.dir / "assets", out_dir=out, base_url=base_url, today=today,
+                    goatcounter_code=goatcounter_code)
         return out
 
     def page(self, rel, **kw):
@@ -169,8 +170,8 @@ class TestShows(FixtureTest):
         fx = self.make()
         for rel in ("index.html", "shows/index.html"):
             footer = fx.page(rel).split('<footer class="site-footer">')[1]
-            self.assertIn('<a href="https://open.spotify.com/artist/x">Spotify</a>', footer, rel)
-            self.assertIn('<a href="https://instagram.com/x">Instagram</a>', footer, rel)
+            self.assertIn('<a href="https://open.spotify.com/artist/x" data-click="footer/spotify"', footer, rel)
+            self.assertIn('<a href="https://instagram.com/x" data-click="footer/instagram"', footer, rel)
         self.assertNotIn("Listen everywhere", fx.page("index.html"))
 
     def test_home_merch(self):
@@ -274,7 +275,7 @@ class TestSpotifyPlayer(FixtureTest):
         html = fx.page("index.html")
         self.assertNotIn("embed/track/4cOdK2wGLETKBW3PvgPWqT", html)
         self.assertNotIn("<iframe", html)
-        self.assertIn(f'<a class="button" href="{self.TRACK}">Spotify</a>', fx.page("index.html"))
+        self.assertIn(f'<a class="button" href="{self.TRACK}" data-click="song/spotify"', html)
 
     def test_no_player_without_embeddable_link(self):
         rel = release("solo", "2026-01-01", links={"bandcamp": "https://joel.bandcamp.com/track/solo"})
@@ -291,6 +292,62 @@ class TestConsent(FixtureTest):
             self.assertIn('data-consent="no">No thanks</button>', html, rel)
             self.assertIn('class="cookie-settings" type="button" hidden', html, rel)
             self.assertNotIn("<iframe", html, rel)
+
+
+class TestStats(FixtureTest):
+    CODE = "joeltest"
+    SCRIPT = 'data-endpoint="https://joeltest.goatcounter.com/count" defer></script>'
+
+    def test_no_script_without_code(self):
+        fx = self.make()
+        for rel in ("index.html", "shows/index.html", "privacy/index.html", "404.html"):
+            html = fx.page(rel)
+            self.assertNotIn("stats.js", html, rel)
+            self.assertNotIn("goatcounter", html.lower(), rel)
+
+    def test_script_on_every_page_with_code(self):
+        out = self.make().build(goatcounter_code=self.CODE)
+        for rel, root in (("index.html", "./"), ("shows/index.html", "../"),
+                          ("privacy/index.html", "../"), ("404.html", "/songsbyjoel/")):
+            html = (out / rel).read_text()
+            self.assertIn(f'<script src="{root}assets/stats.js?v=', html, rel)
+            self.assertIn(self.SCRIPT, html, rel)
+
+    def test_every_streaming_button_has_a_click_name(self):
+        rel = release("our-time", "2026-01-01", title="Our time",
+                      links={"spotify": "https://open.spotify.com/track/a", "bandcamp": "https://joel.bandcamp.com/a"})
+        html = self.make(releases=[rel]).page("index.html")
+        self.assertIn('data-click="our-time/spotify" data-click-title="Our time: Spotify"', html)
+        self.assertIn('data-click="our-time/bandcamp" data-click-title="Our time: Bandcamp"', html)
+
+    def test_other_links_have_click_names(self):
+        fx = self.make(shows=[show("s1", "2026-12-24", tickets={"type": "link", "url": "https://tickets.example.org/s1"})])
+        home = fx.page("index.html")
+        for name in ("nav/merch", "merch/walking-billboard-tee", "playlist/spotify", "footer/spotify",
+                     "footer/instagram", "tickets/s1"):
+            self.assertIn(f'data-click="{name}"', home, name)
+        self.assertIn('data-click="tickets/s1"', fx.page("shows/index.html"))
+
+    def test_every_external_link_is_counted(self):
+        # Every link that leaves the site (except privacy policies on the privacy page) has a click name.
+        fx = self.make(releases=[release("song", "2026-01-01")])
+        html = fx.page("index.html")
+        for tag in re.findall(r'<a [^>]*href="https?://[^"]+"[^>]*>', html):
+            if "privacy" in tag:
+                continue
+            self.assertIn("data-click=", tag, tag)
+
+    def test_privacy_page(self):
+        fx = self.make()
+        html = fx.page("privacy/index.html")
+        self.assertIn("<h1>Privacy</h1>", html)
+        self.assertIn('href="https://instagram.com/x"', html)
+        self.assertNotIn("Visitor statistics", html)
+        html = (fx.build(goatcounter_code=self.CODE) / "privacy/index.html").read_text()
+        self.assertIn("Visitor statistics", html)
+        self.assertIn('href="https://www.goatcounter.com/help/privacy"', html)
+        self.assertIn('data-stats-optout hidden', html)
+        self.assertIn('<a href="./privacy/">Privacy</a>', fx.page("index.html"))
 
 
 class TestPlaylist(FixtureTest):
@@ -456,6 +513,7 @@ class TestPagesAndMenu(FixtureTest):
         out = self.make().build()
         sitemap = (out / "sitemap.xml").read_text()
         self.assertIn(f"<loc>{BASE}shows/</loc>", sitemap)
+        self.assertIn(f"<loc>{BASE}privacy/</loc>", sitemap)
         self.assertNotIn("music/", sitemap)
         self.assertIn(f"Sitemap: {BASE}sitemap.xml", (out / "robots.txt").read_text())
         self.assertFalse((out / "CNAME").exists())
